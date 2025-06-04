@@ -1,5 +1,27 @@
 basePath: /api/v1
 definitions:
+  domain.Bucket:
+    properties:
+      bucketKey:
+        type: string
+      bucketOwner:
+        type: string
+      createdDate:
+        type: integer
+      permissions:
+        items:
+          $ref: '#/definitions/domain.Permission'
+        type: array
+      policyKey:
+        type: string
+    type: object
+  domain.Permission:
+    properties:
+      access:
+        type: string
+      authId:
+        type: string
+    type: object
   handler.BucketResponse:
     properties:
       created_date:
@@ -41,6 +63,20 @@ paths:
       tags:
       - 認証
   /buckets:
+    get:
+      description: バケット一覧を取得
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Bucket'
+            type: array
+      summary: バケット一覧取得
+      tags:
+      - バケット
     post:
       consumes:
       - application/json

@@ -23,5 +23,6 @@ func (r *APSRouter) SetupRoutes(rg *gin.RouterGroup) {
 	{
 		aps.POST("/token", r.apsHandler.GetToken)
 		aps.POST("/buckets", r.bucketHandler.CreateBucket)
+		aps.GET("/buckets", r.bucketHandler.GetBuckets)
 	}
 }

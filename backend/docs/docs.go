@@ -39,6 +39,27 @@ const docTemplate = `{
             }
         },
         "/buckets": {
+            "get": {
+                "description": "バケット一覧を取得",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "バケット"
+                ],
+                "summary": "バケット一覧取得",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Bucket"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "新規バケットを作成",
                 "consumes": [
@@ -63,6 +84,40 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "domain.Bucket": {
+            "type": "object",
+            "properties": {
+                "bucketKey": {
+                    "type": "string"
+                },
+                "bucketOwner": {
+                    "type": "string"
+                },
+                "createdDate": {
+                    "type": "integer"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Permission"
+                    }
+                },
+                "policyKey": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Permission": {
+            "type": "object",
+            "properties": {
+                "access": {
+                    "type": "string"
+                },
+                "authId": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.BucketResponse": {
             "type": "object",
             "properties": {

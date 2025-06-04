@@ -60,3 +60,37 @@ func (r *APSBucketRepository) CreateBucket(accessToken string, bucketKey string,
 
     return &bucket, nil
 }
+
+func (r *APSBucketRepository) GetBuckets(accessToken string) ([]domain.Bucket, error) {
+    // クエリパラメータを追加
+    url := fmt.Sprintf("%s/oss/v2/buckets?limit=100", r.endpoint)
+    
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        return nil, err
+    }
+
+    req.Header.Set("Authorization", "Bearer "+accessToken)
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("failed to get buckets: status code %d", resp.StatusCode)
+    }
+
+    type bucketsResponse struct {
+        Items []domain.Bucket `json:"items"`
+    }
+
+    var response bucketsResponse
+    if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+        return nil, err
+    }
+
+    return response.Items, nil
+}
