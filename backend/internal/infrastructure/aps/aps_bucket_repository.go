@@ -94,3 +94,27 @@ func (r *APSBucketRepository) GetBuckets(accessToken string) ([]domain.Bucket, e
 
     return response.Items, nil
 }
+
+func (r *APSBucketRepository) DeleteBucket(accessToken string, bucketKey string) error {
+    url := fmt.Sprintf("%s/oss/v2/buckets/%s", r.endpoint, bucketKey)
+    
+    req, err := http.NewRequest("DELETE", url, nil)
+    if err != nil {
+        return err
+    }
+
+    req.Header.Set("Authorization", "Bearer "+accessToken)
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        return fmt.Errorf("failed to delete bucket: status code %d", resp.StatusCode)
+    }
+
+    return nil
+}

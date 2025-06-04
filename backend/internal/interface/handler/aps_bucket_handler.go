@@ -48,6 +48,21 @@ func (h *APSBucketHandler) GetBuckets(c *gin.Context) {
     c.JSON(200, buckets)
 }
 
+// @Summary バケット削除
+// @Description バケットを削除
+// @Tags バケット
+// @Param bucketKey path string true "Bucket Key"
+// @Success 200 {object} string
+// @Router /buckets/{bucketKey} [delete]
+func (h *APSBucketHandler) DeleteBucket(c *gin.Context) {
+    bucketKey := c.Param("bucketKey")
+    if err := h.bucketUseCase.DeleteBucket(bucketKey); err != nil {
+        c.JSON(500, gin.H{"error": err.Error()})
+        return
+    }
+    c.JSON(200, gin.H{"message": "Bucket deleted successfully"})
+}
+
 // BucketResponse バケット情報のレスポンス構造体
 type BucketResponse struct {
     Name         string    `json:"name"`
