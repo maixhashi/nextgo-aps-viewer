@@ -75,6 +75,59 @@
                     }
                 }
             }
+        },
+        "/buckets/{bucketKey}": {
+            "get": {
+                "description": "バケットの詳細情報を取得",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "バケット"
+                ],
+                "summary": "バケット詳細取得",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bucket Key",
+                        "name": "bucketKey",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Bucket"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "バケットを削除",
+                "tags": [
+                    "バケット"
+                ],
+                "summary": "バケット削除",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bucket Key",
+                        "name": "bucketKey",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

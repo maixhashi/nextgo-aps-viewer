@@ -91,4 +91,39 @@ paths:
       summary: バケット作成
       tags:
       - バケット
+  /buckets/{bucketKey}:
+    delete:
+      description: バケットを削除
+      parameters:
+      - description: Bucket Key
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: バケット削除
+      tags:
+      - バケット
+    get:
+      description: バケットの詳細情報を取得
+      parameters:
+      - description: Bucket Key
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Bucket'
+      summary: バケット詳細取得
+      tags:
+      - バケット
 swagger: "2.0"

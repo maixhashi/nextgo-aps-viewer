@@ -16,5 +16,6 @@ type Permission struct {
 type BucketRepository interface {
     CreateBucket(accessToken string, bucketKey string, policyKey string) (*Bucket, error)
     GetBuckets(accessToken string) ([]Bucket, error)
-    DeleteBucket(accessToken string, bucketKey string) error // 追加
+    DeleteBucket(accessToken string, bucketKey string) error
+    GetBucketDetails(accessToken string, bucketKey string) (*Bucket, error) // 追加
 }

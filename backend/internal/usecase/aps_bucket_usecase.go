@@ -55,3 +55,15 @@ func (u *APSBucketUseCase) DeleteBucket(bucketKey string) error {
 
     return u.bucketRepo.DeleteBucket(token.AccessToken, bucketKey)
 }
+
+func (u *APSBucketUseCase) GetBucketDetails(bucketKey string) (*domain.Bucket, error) {
+    token, err := u.authUseCase.GetToken(
+        u.clientID, 
+        u.clientSecret, 
+        "bucket:read")
+    if err != nil {
+        return nil, err
+    }
+
+    return u.bucketRepo.GetBucketDetails(token.AccessToken, bucketKey)
+}
