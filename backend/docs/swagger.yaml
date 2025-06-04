@@ -1,14 +1,21 @@
 basePath: /api/v1
 definitions:
-  domain.APSToken:
+  handler.BucketResponse:
     properties:
-      accessToken:
+      created_date:
         type: string
-      expiresIn:
+      name:
+        type: string
+      policy_key:
+        type: string
+    type: object
+  handler.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
         type: integer
-      refreshToken:
-        type: string
-      tokenType:
+      token_type:
         type: string
     type: object
 host: localhost:8080
@@ -18,25 +25,34 @@ info:
   title: Nextgo APS Viewer API
   version: "1.0"
 paths:
-  /aps/token:
-    post:
+  /auth/token:
+    get:
       consumes:
       - application/json
-      description: Get authentication token from APS
+      description: APS サービス用の認証トークンを取得
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.APSToken'
-        "400":
-          description: Bad Request
-          schema: {}
-        "500":
-          description: Internal Server Error
-          schema: {}
-      summary: Get APS token
+            $ref: '#/definitions/handler.TokenResponse'
+      summary: トークン取得
       tags:
-      - aps
+      - 認証
+  /buckets:
+    post:
+      consumes:
+      - application/json
+      description: 新規バケットを作成
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.BucketResponse'
+      summary: バケット作成
+      tags:
+      - バケット
 swagger: "2.0"

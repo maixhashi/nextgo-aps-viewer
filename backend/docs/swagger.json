@@ -9,9 +9,9 @@
     "host": "localhost:8080",
     "basePath": "/api/v1",
     "paths": {
-        "/aps/token": {
-            "post": {
-                "description": "Get authentication token from APS",
+        "/auth/token": {
+            "get": {
+                "description": "APS サービス用の認証トークンを取得",
                 "consumes": [
                     "application/json"
                 ],
@@ -19,42 +19,68 @@
                     "application/json"
                 ],
                 "tags": [
-                    "aps"
+                    "認証"
                 ],
-                "summary": "Get APS token",
+                "summary": "トークン取得",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.APSToken"
+                            "$ref": "#/definitions/handler.TokenResponse"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/buckets": {
+            "post": {
+                "description": "新規バケットを作成",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "バケット"
+                ],
+                "summary": "バケット作成",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.BucketResponse"
+                        }
                     }
                 }
             }
         }
     },
     "definitions": {
-        "domain.APSToken": {
+        "handler.BucketResponse": {
             "type": "object",
             "properties": {
-                "accessToken": {
+                "created_date": {
                     "type": "string"
                 },
-                "expiresIn": {
+                "name": {
+                    "type": "string"
+                },
+                "policy_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
                     "type": "integer"
                 },
-                "refreshToken": {
-                    "type": "string"
-                },
-                "tokenType": {
+                "token_type": {
                     "type": "string"
                 }
             }
