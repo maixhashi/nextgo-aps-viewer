@@ -1,14 +1,43 @@
 basePath: /api/v1
 definitions:
-  domain.APSToken:
+  domain.Bucket:
     properties:
-      accessToken:
+      bucketKey:
         type: string
-      expiresIn:
+      bucketOwner:
+        type: string
+      createdDate:
         type: integer
-      refreshToken:
+      permissions:
+        items:
+          $ref: '#/definitions/domain.Permission'
+        type: array
+      policyKey:
         type: string
-      tokenType:
+    type: object
+  domain.Permission:
+    properties:
+      access:
+        type: string
+      authId:
+        type: string
+    type: object
+  handler.BucketResponse:
+    properties:
+      created_date:
+        type: string
+      name:
+        type: string
+      policy_key:
+        type: string
+    type: object
+  handler.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      token_type:
         type: string
     type: object
 host: localhost:8080
@@ -18,25 +47,83 @@ info:
   title: Nextgo APS Viewer API
   version: "1.0"
 paths:
-  /aps/token:
-    post:
+  /auth/token:
+    get:
       consumes:
       - application/json
-      description: Get authentication token from APS
+      description: APS サービス用の認証トークンを取得
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.APSToken'
-        "400":
-          description: Bad Request
-          schema: {}
-        "500":
-          description: Internal Server Error
-          schema: {}
-      summary: Get APS token
+            $ref: '#/definitions/handler.TokenResponse'
+      summary: トークン取得
       tags:
-      - aps
+      - 認証
+  /buckets:
+    get:
+      description: バケット一覧を取得
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Bucket'
+            type: array
+      summary: バケット一覧取得
+      tags:
+      - バケット
+    post:
+      consumes:
+      - application/json
+      description: 新規バケットを作成
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.BucketResponse'
+      summary: バケット作成
+      tags:
+      - バケット
+  /buckets/{bucketKey}:
+    delete:
+      description: バケットを削除
+      parameters:
+      - description: Bucket Key
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: バケット削除
+      tags:
+      - バケット
+    get:
+      description: バケットの詳細情報を取得
+      parameters:
+      - description: Bucket Key
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Bucket'
+      summary: バケット詳細取得
+      tags:
+      - バケット
 swagger: "2.0"

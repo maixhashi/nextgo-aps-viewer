@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/aps/token": {
-            "post": {
-                "description": "Get authentication token from APS",
+        "/auth/token": {
+            "get": {
+                "description": "APS サービス用の認証トークンを取得",
                 "consumes": [
                     "application/json"
                 ],
@@ -25,42 +25,176 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "aps"
+                    "認証"
                 ],
-                "summary": "Get APS token",
+                "summary": "トークン取得",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.APSToken"
+                            "$ref": "#/definitions/handler.TokenResponse"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/buckets": {
+            "get": {
+                "description": "バケット一覧を取得",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "バケット"
+                ],
+                "summary": "バケット一覧取得",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Bucket"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "新規バケットを作成",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "バケット"
+                ],
+                "summary": "バケット作成",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.BucketResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/buckets/{bucketKey}": {
+            "get": {
+                "description": "バケットの詳細情報を取得",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "バケット"
+                ],
+                "summary": "バケット詳細取得",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bucket Key",
+                        "name": "bucketKey",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Bucket"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "バケットを削除",
+                "tags": [
+                    "バケット"
+                ],
+                "summary": "バケット削除",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bucket Key",
+                        "name": "bucketKey",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
         }
     },
     "definitions": {
-        "domain.APSToken": {
+        "domain.Bucket": {
             "type": "object",
             "properties": {
-                "accessToken": {
+                "bucketKey": {
                     "type": "string"
                 },
-                "expiresIn": {
+                "bucketOwner": {
+                    "type": "string"
+                },
+                "createdDate": {
                     "type": "integer"
                 },
-                "refreshToken": {
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Permission"
+                    }
+                },
+                "policyKey": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Permission": {
+            "type": "object",
+            "properties": {
+                "access": {
                     "type": "string"
                 },
-                "tokenType": {
+                "authId": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.BucketResponse": {
+            "type": "object",
+            "properties": {
+                "created_date": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "policy_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "type": "integer"
+                },
+                "token_type": {
                     "type": "string"
                 }
             }
