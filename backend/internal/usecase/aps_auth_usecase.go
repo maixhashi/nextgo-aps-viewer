@@ -1,16 +1,19 @@
 package usecase
 
-import "github.com/maixhashi/nextgo-aps-viewer/internal/domain"
+import (
+    "github.com/maixhashi/nextgo-aps-viewer/internal/domain"
+)
 
 type APSAuthUseCase struct {
-    repository domain.APSTokenRepository
+    apsRepo domain.APSTokenRepository
 }
 
-func NewAPSAuthUseCase(repo domain.APSTokenRepository) *APSAuthUseCase {
-    return &APSAuthUseCase{repository: repo}
+func NewAPSAuthUseCase(apsRepo domain.APSTokenRepository) *APSAuthUseCase {
+    return &APSAuthUseCase{
+        apsRepo: apsRepo,
+    }
 }
 
-func (u *APSAuthUseCase) GetAuthToken(clientID string, clientSecret string) (*domain.APSToken, error) {
-    scope := "data:read data:write"
-    return u.repository.GetToken(clientID, clientSecret, scope)
+func (u *APSAuthUseCase) GetToken(clientID string, clientSecret string, scope string) (*domain.APSToken, error) {
+    return u.apsRepo.GetToken(clientID, clientSecret, scope)
 }

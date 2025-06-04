@@ -1,32 +1,30 @@
 package handler
 
 import (
-    "encoding/json"
-    "net/http"
+    "github.com/gin-gonic/gin"
     "github.com/maixhashi/nextgo-aps-viewer/internal/usecase"
 )
 
 type APSAuthHandler struct {
-    authUseCase  *usecase.APSAuthUseCase
+    apsUseCase   *usecase.APSAuthUseCase
     clientID     string
     clientSecret string
 }
 
-func NewAPSAuthHandler(useCase *usecase.APSAuthUseCase, clientID, clientSecret string) *APSAuthHandler {
+func NewAPSAuthHandler(apsUseCase *usecase.APSAuthUseCase, clientID, clientSecret string) *APSAuthHandler {
     return &APSAuthHandler{
-        authUseCase:  useCase,
+        apsUseCase:   apsUseCase,
         clientID:     clientID,
         clientSecret: clientSecret,
     }
 }
 
-func (h *APSAuthHandler) HandleGetToken(w http.ResponseWriter, r *http.Request) {
-    token, err := h.authUseCase.GetAuthToken(h.clientID, h.clientSecret)
+// GetToken handles the token request
+func (h *APSAuthHandler) GetToken(c *gin.Context) {
+    token, err := h.apsUseCase.GetToken(h.clientID, h.clientSecret, "data:read")
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        c.JSON(500, gin.H{"error": err.Error()})
         return
     }
-
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(token)
+    c.JSON(200, token)
 }

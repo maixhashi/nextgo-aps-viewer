@@ -2,41 +2,49 @@ package main
 
 import (
     "log"
-    "net/http"
     "os"
+    "github.com/gin-gonic/gin"
     "github.com/joho/godotenv"
+    "github.com/swaggo/gin-swagger"
+    "github.com/swaggo/files"
+    _ "github.com/maixhashi/nextgo-aps-viewer/docs"
     "github.com/maixhashi/nextgo-aps-viewer/internal/infrastructure/aps"
     "github.com/maixhashi/nextgo-aps-viewer/internal/interface/handler"
     "github.com/maixhashi/nextgo-aps-viewer/internal/interface/router"
     "github.com/maixhashi/nextgo-aps-viewer/internal/usecase"
 )
 
+// @title           Nextgo APS Viewer API
+// @version         1.0
+// @description     API for APS Viewer application
+// @host           localhost:8080
+// @BasePath       /api/v1
 func main() {
-    // .envファイルの読み込み
     if err := godotenv.Load(); err != nil {
         log.Fatal("Error loading .env file")
     }
 
-    // 環境変数の取得
     clientID := os.Getenv("APS_CLIENT_ID")
     clientSecret := os.Getenv("APS_CLIENT_SECRET")
 
-    // 依存関係の注入
+    // Initialize Gin
+    r := gin.Default()
+
+    // Swagger documentation endpoint
+    r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+    // Dependencies
     apsRepo := aps.NewAPSTokenRepository()
     apsUseCase := usecase.NewAPSAuthUseCase(apsRepo)
     apsHandler := handler.NewAPSAuthHandler(apsUseCase, clientID, clientSecret)
     
-    // 各機能のルーターを初期化
+    // Setup routes
+    api := r.Group("/api/v1")
     apsRouter := router.NewAPSRouter(apsHandler)
-    // 他の機能のルーターもここで初期化
+    apsRouter.SetupRoutes(api)
 
-    // メインルーターの設定
-    mainRouter := router.NewRouter(apsRouter)
-    mainRouter.SetupRoutes()
-
-    // サーバー起動
     log.Println("Server starting on :8080")
-    if err := http.ListenAndServe(":8080", nil); err != nil {
+    if err := r.Run(":8080"); err != nil {
         log.Fatal(err)
     }
 }

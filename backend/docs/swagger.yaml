@@ -1,0 +1,42 @@
+basePath: /api/v1
+definitions:
+  domain.APSToken:
+    properties:
+      accessToken:
+        type: string
+      expiresIn:
+        type: integer
+      refreshToken:
+        type: string
+      tokenType:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for APS Viewer application
+  title: Nextgo APS Viewer API
+  version: "1.0"
+paths:
+  /aps/token:
+    post:
+      consumes:
+      - application/json
+      description: Get authentication token from APS
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.APSToken'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get APS token
+      tags:
+      - aps
+swagger: "2.0"
