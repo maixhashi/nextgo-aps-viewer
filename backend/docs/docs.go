@@ -134,6 +134,42 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/buckets/{bucketKey}/objects/signeds3upload": {
+            "get": {
+                "description": "オブジェクトアップロード用のS3署名付きURLを取得",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "オブジェクト"
+                ],
+                "summary": "S3署名付きURLの取得",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bucket Key",
+                        "name": "bucketKey",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Object Key",
+                        "name": "objectKey",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Object"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -157,6 +193,32 @@ const docTemplate = `{
                 },
                 "policyKey": {
                     "type": "string"
+                }
+            }
+        },
+        "domain.Object": {
+            "type": "object",
+            "properties": {
+                "bucketKey": {
+                    "type": "string"
+                },
+                "objectKey": {
+                    "type": "string"
+                },
+                "uploadExpiration": {
+                    "type": "string"
+                },
+                "uploadKey": {
+                    "type": "string"
+                },
+                "urlExpiration": {
+                    "type": "string"
+                },
+                "urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

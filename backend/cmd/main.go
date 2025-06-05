@@ -47,9 +47,14 @@ func main() {
     bucketUseCase := usecase.NewAPSBucketUseCase(bucketRepo, apsUseCase, clientID, clientSecret)
     bucketHandler := handler.NewAPSBucketHandler(bucketUseCase)
 
+    // Dependencies for Object
+    objectRepo := aps.NewAPSObjectRepository()
+    objectUseCase := usecase.NewAPSObjectUseCase(objectRepo, apsUseCase, clientID, clientSecret)
+    objectHandler := handler.NewAPSObjectHandler(objectUseCase)
+
     // Setup routes - パスの重複を修正
     api := r.Group("/api/v1")
-    apsRouter := router.NewAPSRouter(apsHandler, bucketHandler)
+    apsRouter := router.NewAPSRouter(apsHandler, bucketHandler, objectHandler)
     apsRouter.SetupRoutes(api)
 
     // デバッグ用にルートを表示

@@ -15,6 +15,23 @@ definitions:
       policyKey:
         type: string
     type: object
+  domain.Object:
+    properties:
+      bucketKey:
+        type: string
+      objectKey:
+        type: string
+      uploadExpiration:
+        type: string
+      uploadKey:
+        type: string
+      urlExpiration:
+        type: string
+      urls:
+        items:
+          type: string
+        type: array
+    type: object
   domain.Permission:
     properties:
       access:
@@ -126,4 +143,28 @@ paths:
       summary: バケット詳細取得
       tags:
       - バケット
+  /buckets/{bucketKey}/objects/signeds3upload:
+    get:
+      description: オブジェクトアップロード用のS3署名付きURLを取得
+      parameters:
+      - description: Bucket Key
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      - description: Object Key
+        in: query
+        name: objectKey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Object'
+      summary: S3署名付きURLの取得
+      tags:
+      - オブジェクト
 swagger: "2.0"

@@ -8,12 +8,14 @@ import (
 type APSRouter struct {
 	apsHandler    *handler.APSAuthHandler
 	bucketHandler *handler.APSBucketHandler
+	objectHandler *handler.APSObjectHandler
 }
 
-func NewAPSRouter(apsHandler *handler.APSAuthHandler, bucketHandler *handler.APSBucketHandler) *APSRouter {
+func NewAPSRouter(apsHandler *handler.APSAuthHandler, bucketHandler *handler.APSBucketHandler, objectHandler *handler.APSObjectHandler) *APSRouter {
 	return &APSRouter{
 		apsHandler:    apsHandler,
 		bucketHandler: bucketHandler,
+		objectHandler: objectHandler,
 	}
 }
 
@@ -26,5 +28,6 @@ func (r *APSRouter) SetupRoutes(rg *gin.RouterGroup) {
 		aps.GET("/buckets", r.bucketHandler.GetBuckets)
 		aps.GET("/buckets/:bucketKey", r.bucketHandler.GetBucketDetails)
 		aps.DELETE("/buckets/:bucketKey", r.bucketHandler.DeleteBucket)
+		aps.GET("/buckets/:bucketKey/objects/signeds3upload", r.objectHandler.GetSignedUrl)
 	}
 }
