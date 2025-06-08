@@ -1,0 +1,69 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "APS Token Management API",
+        "title": "APS Viewer API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/api/v1/token": {
+            "post": {
+                "description": "2-legged認証でAPSアクセストークンを取得します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APS Token"
+                ],
+                "summary": "APSトークン取得",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.APSToken"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.APSToken": {
+            "description": "APSトークンレスポンス",
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "expires_in": {
+                    "type": "integer",
+                    "example": 3599
+                },
+                "refresh_token": {
+                    "type": "string",
+                    "example": ""
+                },
+                "token_type": {
+                    "type": "string",
+                    "example": "Bearer"
+                }
+            }
+        }
+    }
+}

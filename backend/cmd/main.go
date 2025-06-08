@@ -1,0 +1,35 @@
+package main
+
+import (
+    "log"
+    "net/http"
+    "os"
+
+    "github.com/joho/godotenv"
+    _ "github.com/maixhashi/nextgo-aps-viewer/backend/docs" // Swaggerドキュメントのインポート
+    "github.com/maixhashi/nextgo-aps-viewer/backend/internal/interface/router"
+)
+
+// @title APS Viewer API
+// @version 1.0
+// @description APS Token Management API
+// @host localhost:8080
+// @BasePath /api/v1
+func main() {
+    // 環境変数の読み込み
+    if err := godotenv.Load(); err != nil {
+        log.Fatal("Error loading .env file")
+    }
+
+    // ルーターの初期化
+    r := router.NewRouter()
+
+    // サーバーの起動
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080"
+    }
+    
+    log.Printf("Server starting on port %s", port)
+    log.Fatal(http.ListenAndServe(":"+port, r))
+}
