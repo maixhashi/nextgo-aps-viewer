@@ -2,8 +2,8 @@ package router
 
 import (
     "github.com/gorilla/mux"
-    httpSwagger "github.com/swaggo/http-swagger"
-    "github.com/maixhashi/nextgo-aps-viewer/backend/internal/interface/handler"
+    "github.com/swaggo/http-swagger"
+    "github.com/maixhashi/nextgo-aps-viewer/backend/internal/interface/handler/aps_token"
 )
 
 // @title APS Viewer API
@@ -12,13 +12,7 @@ import (
 // @host localhost:8080
 // @BasePath /api/v1
 
-func RegisterAPSTokenRoutes(r *mux.Router, h *handler.APSTokenHandler) {
-    // Swaggerドキュメント
-    r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
-        httpSwagger.URL("/swagger/doc.json"),
-        httpSwagger.DeepLinking(true),
-    ))
-
+func RegisterAPSTokenRoutes(r *mux.Router, h *aps_token.APSTokenHandler) {
     // @Summary APSトークン取得
     // @Description 2-legged認証でAPSアクセストークンを取得
     // @Tags token
@@ -29,4 +23,10 @@ func RegisterAPSTokenRoutes(r *mux.Router, h *handler.APSTokenHandler) {
     // @Failure 500 {object} string "サーバーエラー"
     // @Router /token [post]
     r.HandleFunc("/api/v1/aps/token", h.GetToken).Methods("POST")
+    
+    // Swagger routes
+    r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+        httpSwagger.URL("/swagger/doc.json"),
+        httpSwagger.DeepLinking(true),
+    ))
 }
