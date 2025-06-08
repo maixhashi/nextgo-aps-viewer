@@ -1,0 +1,47 @@
+basePath: /api/v1
+definitions:
+  domain.APSToken:
+    description: APSトークンレスポンス
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      expires_in:
+        example: 3599
+        type: integer
+      refresh_token:
+        example: ""
+        type: string
+      token_type:
+        example: Bearer
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: APS Token Management API
+  title: APS Viewer API
+  version: "1.0"
+paths:
+  /api/v1/token:
+    post:
+      consumes:
+      - application/json
+      description: 2-legged認証でAPSアクセストークンを取得します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.APSToken'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: APSトークン取得
+      tags:
+      - APS Token
+swagger: "2.0"
