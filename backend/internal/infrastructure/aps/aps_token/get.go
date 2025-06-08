@@ -1,4 +1,4 @@
-package aps
+package aps_token
 
 import (
     "encoding/json"
@@ -10,23 +10,13 @@ import (
     "github.com/maixhashi/nextgo-aps-viewer/backend/internal/domain"
 )
 
-type APSTokenRepository struct {
-    client *http.Client
-}
-
-func NewAPSTokenRepository() *APSTokenRepository {
-    return &APSTokenRepository{
-        client: &http.Client{},
-    }
-}
-
 func (r *APSTokenRepository) GetToken() (*domain.APSToken, error) {
     clientID := os.Getenv("APS_CLIENT_ID")
     clientSecret := os.Getenv("APS_CLIENT_SECRET")
     
     data := url.Values{}
     data.Set("grant_type", "client_credentials")
-    data.Set("scope", "data:read") // 必要なスコープを指定
+    data.Set("scope", "data:read bucket:create") 
     
     req, err := http.NewRequest("POST", "https://developer.api.autodesk.com/authentication/v2/token", 
         strings.NewReader(data.Encode()))
@@ -34,7 +24,6 @@ func (r *APSTokenRepository) GetToken() (*domain.APSToken, error) {
         return nil, err
     }
     
-    // Basic認証
     req.SetBasicAuth(clientID, clientSecret)
     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
     

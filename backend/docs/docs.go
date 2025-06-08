@@ -15,6 +15,38 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/buckets": {
+            "post": {
+                "description": "新しいAPSバケットを作成します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APS Bucket"
+                ],
+                "summary": "APSバケット作成",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.APSBucket"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/token": {
             "post": {
                 "description": "2-legged認証でAPSアクセストークンを取得します",
@@ -49,6 +81,29 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "domain.APSBucket": {
+            "type": "object",
+            "properties": {
+                "bucketKey": {
+                    "type": "string"
+                },
+                "bucketOwner": {
+                    "type": "string"
+                },
+                "createdDate": {
+                    "type": "integer"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Permission"
+                    }
+                },
+                "policyKey": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.APSToken": {
             "description": "APSトークンレスポンス",
             "type": "object",
@@ -70,18 +125,29 @@ const docTemplate = `{
                     "example": "Bearer"
                 }
             }
+        },
+        "domain.Permission": {
+            "type": "object",
+            "properties": {
+                "access": {
+                    "type": "string"
+                },
+                "authId": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "APS Viewer API",
-	Description:      "APS Token Management API",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

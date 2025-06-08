@@ -1,5 +1,19 @@
-basePath: /api/v1
 definitions:
+  domain.APSBucket:
+    properties:
+      bucketKey:
+        type: string
+      bucketOwner:
+        type: string
+      createdDate:
+        type: integer
+      permissions:
+        items:
+          $ref: '#/definitions/domain.Permission'
+        type: array
+      policyKey:
+        type: string
+    type: object
   domain.APSToken:
     description: APSトークンレスポンス
     properties:
@@ -16,13 +30,37 @@ definitions:
         example: Bearer
         type: string
     type: object
-host: localhost:8080
+  domain.Permission:
+    properties:
+      access:
+        type: string
+      authId:
+        type: string
+    type: object
 info:
   contact: {}
-  description: APS Token Management API
-  title: APS Viewer API
-  version: "1.0"
 paths:
+  /api/v1/buckets:
+    post:
+      consumes:
+      - application/json
+      description: 新しいAPSバケットを作成します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.APSBucket'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: APSバケット作成
+      tags:
+      - APS Bucket
   /api/v1/token:
     post:
       consumes:

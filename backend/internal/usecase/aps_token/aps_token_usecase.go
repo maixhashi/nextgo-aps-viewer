@@ -1,4 +1,4 @@
-package usecase
+package aps_token
 
 import (
     "github.com/maixhashi/nextgo-aps-viewer/backend/internal/domain"
@@ -12,8 +12,4 @@ func NewAPSTokenUseCase(tokenRepo domain.APSTokenRepository) *APSTokenUseCase {
     return &APSTokenUseCase{
         tokenRepo: tokenRepo,
     }
-}
-
-func (u *APSTokenUseCase) GetToken() (*domain.APSToken, error) {
-    return u.tokenRepo.GetToken()
 }

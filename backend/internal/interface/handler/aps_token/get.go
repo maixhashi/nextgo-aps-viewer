@@ -1,21 +1,9 @@
-package handler
+package aps_token
 
 import (
     "encoding/json"
     "net/http"
-
-    "github.com/maixhashi/nextgo-aps-viewer/backend/internal/usecase"
 )
-
-type APSTokenHandler struct {
-    tokenUseCase *usecase.APSTokenUseCase
-}
-
-func NewAPSTokenHandler(tokenUseCase *usecase.APSTokenUseCase) *APSTokenHandler {
-    return &APSTokenHandler{
-        tokenUseCase: tokenUseCase,
-    }
-}
 
 // @Summary APSトークン取得
 // @Description 2-legged認証でAPSアクセストークンを取得します
