@@ -85,6 +85,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/aps/buckets/{bucketKey}": {
+            "delete": {
+                "description": "指定されたバケットを削除します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APS Bucket"
+                ],
+                "summary": "APSバケット削除",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "バケットキー",
+                        "name": "bucketKey",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/aps_bucket.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/aps_bucket.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/aps/buckets/{bucketKey}/details": {
             "get": {
                 "description": "指定されたバケットの詳細情報を取得します",

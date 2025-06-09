@@ -5,11 +5,13 @@ import (
 )
 
 type APSBucketRepository struct {
-    client *http.Client
+    client  *http.Client
+    baseURL string
 }
 
-func NewAPSBucketRepository() *APSBucketRepository {
+func NewAPSBucketRepository(client *http.Client) *APSBucketRepository {
     return &APSBucketRepository{
-        client: &http.Client{},
+        client:  client,
+        baseURL: "https://developer.api.autodesk.com/oss/v2",
     }
 }

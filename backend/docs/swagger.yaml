@@ -103,6 +103,33 @@ paths:
       summary: APSバケット作成
       tags:
       - APS Bucket
+  /api/v1/aps/buckets/{bucketKey}:
+    delete:
+      consumes:
+      - application/json
+      description: 指定されたバケットを削除します
+      parameters:
+      - description: バケットキー
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_bucket.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_bucket.ErrorResponse'
+      summary: APSバケット削除
+      tags:
+      - APS Bucket
   /api/v1/aps/buckets/{bucketKey}/details:
     get:
       consumes:

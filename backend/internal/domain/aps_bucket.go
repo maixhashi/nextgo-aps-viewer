@@ -29,5 +29,6 @@ type APSBucketDetail struct {
 type APSBucketRepository interface {
     CreateBucket(token string) (*APSBucket, error)
     GetBuckets(token string) (*BucketsResponse, error)
-    GetBucketDetail(token string, bucketKey string) (*APSBucketDetail, error) // 追加
+    GetBucketDetail(token string, bucketKey string) (*APSBucketDetail, error)
+    DeleteBucket(token string, bucketKey string) error // 追加
 }

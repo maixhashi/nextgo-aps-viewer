@@ -16,7 +16,7 @@ func (r *APSTokenRepository) GetToken() (*domain.APSToken, error) {
     
     data := url.Values{}
     data.Set("grant_type", "client_credentials")
-    data.Set("scope", "data:read bucket:read bucket:create") 
+    data.Set("scope", "data:read bucket:read bucket:create bucket:delete") 
     
     req, err := http.NewRequest("POST", "https://developer.api.autodesk.com/authentication/v2/token", 
         strings.NewReader(data.Encode()))
