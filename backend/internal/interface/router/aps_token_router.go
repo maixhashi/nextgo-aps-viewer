@@ -10,7 +10,6 @@ import (
 // @version 1.0
 // @description APS (Autodesk Platform Services) トークン管理API
 // @host localhost:8080
-// @BasePath /api/v1
 
 func RegisterAPSTokenRoutes(r *mux.Router, h *aps_token.APSTokenHandler) {
     // @Summary APSトークン取得
@@ -21,7 +20,7 @@ func RegisterAPSTokenRoutes(r *mux.Router, h *aps_token.APSTokenHandler) {
     // @Success 200 {object} domain.APSToken
     // @Failure 400 {object} string "不正なリクエスト"
     // @Failure 500 {object} string "サーバーエラー"
-    // @Router /token [post]
+    // @Router /api/v1/aps/token [post]
     r.HandleFunc("/api/v1/aps/token", h.GetToken).Methods("POST")
     
     // Swagger routes

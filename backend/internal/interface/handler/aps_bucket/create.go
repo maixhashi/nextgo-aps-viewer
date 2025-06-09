@@ -12,7 +12,7 @@ import (
 // @Produce json
 // @Success 200 {object} domain.APSBucket
 // @Failure 500 {object} ErrorResponse
-// @Router /api/v1/buckets [post]
+// @Router /api/v1/aps/buckets [post]
 func (h *APSBucketHandler) CreateBucket(w http.ResponseWriter, r *http.Request) {
     bucket, err := h.bucketUseCase.CreateBucket()
     if err != nil {

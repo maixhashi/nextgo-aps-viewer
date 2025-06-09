@@ -14,7 +14,6 @@ import (
 // @version 1.0
 // @description APS Token Management API
 // @host localhost:8080
-// @BasePath /api/v1
 func main() {
     // 環境変数の読み込み
     if err := godotenv.Load(); err != nil {
