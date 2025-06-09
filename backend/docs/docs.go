@@ -170,6 +170,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/aps/buckets/{bucketKey}/objects/signeds3upload": {
+            "post": {
+                "description": "オブジェクトをS3へ保存するためのS3署名付きURLを取得します",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APS Object"
+                ],
+                "summary": "S3署名付きURLの取得",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "バケットキー",
+                        "name": "bucketKey",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "アップロードするファイル",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "パート数",
+                        "name": "parts",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.APSObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/aps_object.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/aps_object.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/aps/token": {
             "post": {
                 "description": "2-legged認証でAPSアクセストークンを取得します",
@@ -212,6 +270,14 @@ const docTemplate = `{
                 }
             }
         },
+        "aps_object.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.APSBucket": {
             "type": "object",
             "properties": {
@@ -246,6 +312,26 @@ const docTemplate = `{
                 },
                 "policyKey": {
                     "type": "string"
+                }
+            }
+        },
+        "domain.APSObject": {
+            "type": "object",
+            "properties": {
+                "uploadExpiration": {
+                    "type": "string"
+                },
+                "uploadKey": {
+                    "type": "string"
+                },
+                "urlExpiration": {
+                    "type": "string"
+                },
+                "urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

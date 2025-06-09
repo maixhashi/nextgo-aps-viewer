@@ -4,6 +4,11 @@ definitions:
       message:
         type: string
     type: object
+  aps_object.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
   domain.APSBucket:
     properties:
       bucketKey:
@@ -27,6 +32,19 @@ definitions:
         type: array
       policyKey:
         type: string
+    type: object
+  domain.APSObject:
+    properties:
+      uploadExpiration:
+        type: string
+      uploadKey:
+        type: string
+      urlExpiration:
+        type: string
+      urls:
+        items:
+          type: string
+        type: array
     type: object
   domain.APSToken:
     description: APSトークンレスポンス
@@ -159,6 +177,45 @@ paths:
       summary: APSバケット詳細取得
       tags:
       - APS Bucket
+  /api/v1/aps/buckets/{bucketKey}/objects/signeds3upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: オブジェクトをS3へ保存するためのS3署名付きURLを取得します
+      parameters:
+      - description: バケットキー
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      - description: アップロードするファイル
+        in: formData
+        name: file
+        required: true
+        type: file
+      - default: 1
+        description: パート数
+        in: query
+        name: parts
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.APSObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: S3署名付きURLの取得
+      tags:
+      - APS Object
   /api/v1/aps/token:
     post:
       consumes:
