@@ -221,6 +221,126 @@
                 }
             }
         },
+        "/api/v1/aps/buckets/{bucketKey}/objects/upload": {
+            "post": {
+                "description": "S3署名付きURLを取得してオブジェクトをアップロードするシーケンスを実行します",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APS Object"
+                ],
+                "summary": "APSオブジェクトのアップロードシーケンス",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "バケットキー",
+                        "name": "bucketKey",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "アップロードするファイル",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "パート数",
+                        "name": "parts",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/aps_object.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/aps_object.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/aps/objects/signeds3upload": {
+            "put": {
+                "description": "S3署名付きURLを使用してオブジェクトをS3へアップロードします",
+                "consumes": [
+                    "application/octet-stream"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APS Object"
+                ],
+                "summary": "S3署名付きURLを使用したオブジェクトのアップロード",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "署名付きURL",
+                        "name": "signedURL",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "アップロードするファイルのバイナリデータ",
+                        "name": "file",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/aps_object.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/aps_object.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/aps/token": {
             "post": {
                 "description": "2-legged認証でAPSアクセストークンを取得します",
