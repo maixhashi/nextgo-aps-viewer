@@ -25,7 +25,7 @@ func NewRouter() *mux.Router {
     apsTokenHandler := aps_token.NewAPSTokenHandler(apsTokenUseCase)
     apsBucketHandler := aps_bucket.NewAPSBucketHandler(apsBucketUseCase)
     
-    // Register routes
+    // Register routes using modular router files
     RegisterAPSTokenRoutes(r, apsTokenHandler)
     RegisterAPSBucketRoutes(r, apsBucketHandler)
     

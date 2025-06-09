@@ -8,4 +8,5 @@ import (
 func RegisterAPSBucketRoutes(r *mux.Router, h *aps_bucket.APSBucketHandler) {
     r.HandleFunc("/api/v1/aps/buckets", h.CreateBucket).Methods("POST")
     r.HandleFunc("/api/v1/aps/buckets", h.GetBuckets).Methods("GET")
+    r.HandleFunc("/api/v1/aps/buckets/{bucketKey}/details", h.GetBucketDetail).Methods("GET")
 }

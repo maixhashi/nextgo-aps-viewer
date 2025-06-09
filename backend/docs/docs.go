@@ -85,6 +85,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/aps/buckets/{bucketKey}/details": {
+            "get": {
+                "description": "指定されたバケットの詳細情報を取得します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APS Bucket"
+                ],
+                "summary": "APSバケット詳細取得",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "バケットキー",
+                        "name": "bucketKey",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.APSBucketDetail"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/aps_bucket.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/aps_bucket.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/aps/token": {
             "post": {
                 "description": "2-legged認証でAPSアクセストークンを取得します",
@@ -141,6 +185,29 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.APSBucketDetail": {
+            "type": "object",
+            "properties": {
+                "bucketKey": {
+                    "type": "string"
+                },
+                "bucketOwner": {
+                    "type": "string"
+                },
+                "createdDate": {
+                    "type": "integer"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Permission"
+                    }
+                },
+                "policyKey": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.APSToken": {
             "description": "APSトークンレスポンス",
             "type": "object",
@@ -160,6 +227,17 @@ const docTemplate = `{
                 "token_type": {
                     "type": "string",
                     "example": "Bearer"
+                }
+            }
+        },
+        "domain.Permission": {
+            "type": "object",
+            "properties": {
+                "access": {
+                    "type": "string"
+                },
+                "authId": {
+                    "type": "string"
                 }
             }
         }
