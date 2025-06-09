@@ -1,6 +1,7 @@
 package router
 
 import (
+    "net/http"
     "github.com/gorilla/mux"
     aps_token_repo "github.com/maixhashi/nextgo-aps-viewer/backend/internal/infrastructure/aps/aps_token"
     aps_bucket_repo "github.com/maixhashi/nextgo-aps-viewer/backend/internal/infrastructure/aps/aps_bucket"
@@ -13,9 +14,12 @@ import (
 func NewRouter() *mux.Router {
     r := mux.NewRouter()
     
+    // Initialize HTTP client
+    httpClient := &http.Client{}
+    
     // Initialize repositories
     apsTokenRepo := aps_token_repo.NewAPSTokenRepository()
-    apsBucketRepo := aps_bucket_repo.NewAPSBucketRepository()
+    apsBucketRepo := aps_bucket_repo.NewAPSBucketRepository(httpClient)
     
     // Initialize use cases
     apsTokenUseCase := token_usecase.NewAPSTokenUseCase(apsTokenRepo)
