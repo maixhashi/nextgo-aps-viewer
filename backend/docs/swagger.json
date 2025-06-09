@@ -1,10 +1,55 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "APS Token Management API",
+        "title": "APS Viewer API",
+        "contact": {},
+        "version": "1.0"
     },
+    "host": "localhost:8080",
     "paths": {
-        "/api/v1/buckets": {
+        "/api/v1/aps/buckets": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get list of all buckets",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APS Bucket"
+                ],
+                "summary": "Get buckets list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.APSBucket"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/aps_bucket.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/aps_bucket.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "新しいAPSバケットを作成します",
                 "consumes": [
@@ -27,16 +72,13 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/aps_bucket.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/api/v1/token": {
+        "/api/v1/aps/token": {
             "post": {
                 "description": "2-legged認証でAPSアクセストークンを取得します",
                 "consumes": [
@@ -70,23 +112,22 @@
         }
     },
     "definitions": {
+        "aps_bucket.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.APSBucket": {
             "type": "object",
             "properties": {
                 "bucketKey": {
                     "type": "string"
                 },
-                "bucketOwner": {
-                    "type": "string"
-                },
                 "createdDate": {
                     "type": "integer"
-                },
-                "permissions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.Permission"
-                    }
                 },
                 "policyKey": {
                     "type": "string"
@@ -112,17 +153,6 @@
                 "token_type": {
                     "type": "string",
                     "example": "Bearer"
-                }
-            }
-        },
-        "domain.Permission": {
-            "type": "object",
-            "properties": {
-                "access": {
-                    "type": "string"
-                },
-                "authId": {
-                    "type": "string"
                 }
             }
         }

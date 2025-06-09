@@ -12,7 +12,7 @@ import (
 // @Produce json
 // @Success 200 {object} domain.APSToken
 // @Failure 500 {object} map[string]string
-// @Router /api/v1/token [post]
+// @Router /api/v1/aps/token [post]
 func (h *APSTokenHandler) GetToken(w http.ResponseWriter, r *http.Request) {
     token, err := h.tokenUseCase.GetToken()
     if err != nil {
