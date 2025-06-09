@@ -1,11 +1,14 @@
 package domain
 
 type APSBucket struct {
-    BucketKey    string       `json:"bucketKey"`
-    BucketOwner  string       `json:"bucketOwner"`
-    CreatedDate  int64        `json:"createdDate"`
-    Permissions  []Permission `json:"permissions"`
-    PolicyKey    string       `json:"policyKey"`
+    BucketKey    string `json:"bucketKey"`
+    CreatedDate  int64  `json:"createdDate"`
+    PolicyKey    string `json:"policyKey"`
+}
+
+type BucketsResponse struct {
+    Items []APSBucket `json:"items"`
+    Next  string      `json:"next"`
 }
 
 type Permission struct {
@@ -15,4 +18,5 @@ type Permission struct {
 
 type APSBucketRepository interface {
     CreateBucket(token string) (*APSBucket, error)
+    GetBuckets(token string) (*BucketsResponse, error)
 }
