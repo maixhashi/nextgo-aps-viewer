@@ -216,6 +216,86 @@ paths:
       summary: S3署名付きURLの取得
       tags:
       - APS Object
+  /api/v1/aps/buckets/{bucketKey}/objects/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: S3署名付きURLを取得してオブジェクトをアップロードするシーケンスを実行します
+      parameters:
+      - description: バケットキー
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      - description: アップロードするファイル
+        in: formData
+        name: file
+        required: true
+        type: file
+      - default: 1
+        description: パート数
+        in: query
+        name: parts
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: APSオブジェクトのアップロードシーケンス
+      tags:
+      - APS Object
+  /api/v1/aps/objects/signeds3upload:
+    put:
+      consumes:
+      - application/octet-stream
+      description: S3署名付きURLを使用してオブジェクトをS3へアップロードします
+      parameters:
+      - description: 署名付きURL
+        in: query
+        name: signedURL
+        required: true
+        type: string
+      - description: アップロードするファイルのバイナリデータ
+        in: body
+        name: file
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: S3署名付きURLを使用したオブジェクトのアップロード
+      tags:
+      - APS Object
   /api/v1/aps/token:
     post:
       consumes:

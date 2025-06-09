@@ -13,9 +13,11 @@ type APSObject struct {
 // APSObjectRepository はAPSオブジェクトのリポジトリインターフェース
 type APSObjectRepository interface {
 	GetS3SignedURLs(bucketKey string, objectKey string, parts int) (*APSObject, error)
+	PutS3SignedURLs(signedURL string, fileContent []byte) error
 }
 
 // APSObjectUseCase はAPSオブジェクトのユースケースインターフェース
 type APSObjectUseCase interface {
 	GetS3SignedURLs(bucketKey string, objectKey string, parts int) (*APSObject, error)
+	PutS3SignedURLs(signedURL string, fileContent []byte) error
 }
