@@ -35,6 +35,18 @@ definitions:
     type: object
   domain.APSObject:
     properties:
+      bucketKey:
+        type: string
+      contentType:
+        type: string
+      location:
+        type: string
+      objectId:
+        type: string
+      objectKey:
+        type: string
+      size:
+        type: integer
       uploadExpiration:
         type: string
       uploadKey:
@@ -177,6 +189,46 @@ paths:
       summary: APSバケット詳細取得
       tags:
       - APS Bucket
+  /api/v1/aps/buckets/{bucketKey}/objects/{objectKey}/signeds3upload:
+    post:
+      consumes:
+      - application/json
+      description: S3へアップロードしたオブジェクトの作成を完了します
+      parameters:
+      - description: バケットキー
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      - description: オブジェクトキー
+        in: path
+        name: objectKey
+        required: true
+        type: string
+      - description: アップロードキー
+        in: body
+        name: uploadKey
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.APSObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: APSオブジェクトの作成完了
+      tags:
+      - APS Object
   /api/v1/aps/buckets/{bucketKey}/objects/signeds3upload:
     post:
       consumes:

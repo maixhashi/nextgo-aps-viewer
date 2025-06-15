@@ -3,7 +3,6 @@ package aps_object
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/maixhashi/nextgo-aps-viewer/backend/internal/domain"
@@ -14,7 +13,7 @@ func (r *APSObjectRepository) GetS3SignedURLs(bucketKey string, objectKey string
 	// アクセストークンを取得
 	token, err := r.tokenRepo.GetToken()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get access token: %w", err)
+		return nil, err
 	}
 
 	// APIエンドポイントを構築
@@ -24,37 +23,43 @@ func (r *APSObjectRepository) GetS3SignedURLs(bucketKey string, objectKey string
 	// リクエストを作成
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, err
 	}
 
 	// ヘッダーを設定
 	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	// リクエストを送信
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// リクエストを実行
+	resp, err := r.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	// レスポンスを読み取り
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+	// レスポンスを解析
+	var apiResponse struct {
+		URLs             []string `json:"urls"`
+		UploadKey       string   `json:"uploadKey"`
+		UploadExpiration string   `json:"uploadExpiration"`
+		URLExpiration    string   `json:"urlExpiration"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
+		return nil, err
 	}
 
-	// ステータスコードをチェック
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API returned non-OK status: %d, body: %s", resp.StatusCode, string(body))
+	// APSObjectを作成して返す
+	apsObject := &domain.APSObject{
+		BucketKey:        bucketKey,
+		ObjectId:         fmt.Sprintf("urn:adsk.objects:os.object:%s/%s", bucketKey, objectKey),
+		ObjectKey:        objectKey,
+		ContentType:     "application/octet-stream",
+		Location:        fmt.Sprintf("https://developer.api.autodesk.com/oss/v2/buckets/%s/objects/%s", bucketKey, objectKey),
+		URLs:            apiResponse.URLs,
+		UploadKey:       apiResponse.UploadKey,
+		UploadExpiration: apiResponse.UploadExpiration,
+		URLExpiration:    apiResponse.URLExpiration,
 	}
 
-	// レスポンスをパース
-	var apsObject domain.APSObject
-	if err := json.Unmarshal(body, &apsObject); err != nil {
-		return nil, fmt.Errorf("failed to parse response: %w", err)
-	}
-
-	return &apsObject, nil
+	return apsObject, nil
 }

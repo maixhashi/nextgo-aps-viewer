@@ -12,4 +12,8 @@ func SetAPSObjectRoutes(router *mux.Router, handler *aps_object.APSObjectHandler
 	
 	// APSオブジェクトのアップロードシーケンス（署名付きURL取得→アップロード）
 	router.HandleFunc("/api/v1/aps/buckets/{bucketKey}/objects/upload", handler.UploadAPSObjectSequence).Methods("POST")
+	
+	// 既存のルートに追加
+	router.HandleFunc("/api/v1/aps/buckets/{bucketKey}/objects/{objectKey}/signeds3upload", 
+		handler.CreateObject).Methods("POST")
 }
