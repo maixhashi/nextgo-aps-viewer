@@ -9,7 +9,10 @@ import (
     "github.com/maixhashi/nextgo-aps-viewer/backend/internal/domain"
 )
 
-func (r *APSObjectRepository) CreateObject(bucketKey, objectKey, uploadKey string) (*domain.APSObject, error) {
+func (r *APSObjectRepository) CreateObject(bucketKey string, objectKey string, uploadKey string) (*domain.APSObject, error) {
+    // Generate objectId in correct format
+    objectId := fmt.Sprintf("%s/%s", bucketKey, objectKey)
+    
     url := fmt.Sprintf("https://developer.api.autodesk.com/oss/v2/buckets/%s/objects/%s/signeds3upload", 
         bucketKey, objectKey)
 
@@ -46,12 +49,14 @@ func (r *APSObjectRepository) CreateObject(bucketKey, objectKey, uploadKey strin
         return nil, err
     }
 
-    return &domain.APSObject{
-        BucketKey:   bucketKey,
-        ObjectId:    fmt.Sprintf("urn:adsk.objects:os.object:%s/%s", bucketKey, objectKey),
-        ObjectKey:   objectKey,
-        Size:        12582912, // サイズは実際のファイルサイズに応じて設定
-        ContentType: "application/octet-stream",
-        Location:    fmt.Sprintf("https://developer.api.autodesk.com/oss/v2/buckets/%s/objects/%s", bucketKey, objectKey),
-    }, nil
+    // Create APSObject with the generated objectId
+    apsObject = domain.APSObject{
+        ObjectId: objectId,
+        BucketKey: bucketKey,
+        ObjectKey: objectKey,
+        Location: "",  // Set appropriate value if needed
+        Size: 0,      // Set appropriate value if needed
+    }
+    
+    return &apsObject, nil
 }

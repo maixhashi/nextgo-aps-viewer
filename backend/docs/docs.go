@@ -455,6 +455,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/aps/objects/{objectId}/translate": {
+            "post": {
+                "description": "オブジェクトの翻訳ジョブを作成します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APS Object"
+                ],
+                "summary": "APSオブジェクトの翻訳ジョブ作成",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "オブジェクトID",
+                        "name": "objectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "オブジェクトキー",
+                        "name": "objectKey",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.TranslateJobResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/aps_object.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/aps_object.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/aps/token": {
             "post": {
                 "description": "2-legged認証でAPSアクセストークンを取得します",
@@ -609,6 +660,44 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "authId": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.TranslateJobResponse": {
+            "type": "object",
+            "properties": {
+                "acceptedJobs": {
+                    "type": "object",
+                    "properties": {
+                        "output": {
+                            "type": "object",
+                            "properties": {
+                                "formats": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "views": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "result": {
+                    "type": "string"
+                },
+                "urn": {
                     "type": "string"
                 }
             }

@@ -119,10 +119,18 @@ func (h *APSObjectHandler) UploadAPSObjectSequence(w http.ResponseWriter, r *htt
 		return
 	}
 
+	// ステップ5: 翻訳ジョブを作成
+	translateResponse, err := h.objectUseCase.TranslateObject(base64URN, objectKey)
+	if err != nil {
+		http.Error(w, "failed to create translation job: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// レスポンスに追加
 	response := map[string]interface{}{
 		"object": finalObject,
 		"base64EncodedURN": base64URN,
+		"translateJob": translateResponse,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
