@@ -112,9 +112,21 @@ func (h *APSObjectHandler) UploadAPSObjectSequence(w http.ResponseWriter, r *htt
 		return
 	}
 
-	// レスポンスを更新
+	// Base64エンコードされたURNを生成
+	base64URN, err := h.objectUseCase.GenerateBase64EncodedURN(finalObject.ObjectId)
+	if err != nil {
+		http.Error(w, "failed to generate base64 URN: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// レスポンスに追加
+	response := map[string]interface{}{
+		"object": finalObject,
+		"base64EncodedURN": base64URN,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(finalObject)
+	json.NewEncoder(w).Encode(response)
 }
 
 // 一時ファイルに保存するヘルパー関数

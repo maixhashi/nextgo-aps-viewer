@@ -26,4 +26,5 @@ type APSObjectUseCase interface {
 	GetS3SignedURLs(bucketKey string, objectKey string, parts int) (*APSObject, error)
 	PutS3SignedURLs(signedURL string, fileContent []byte) error
 	CreateObject(bucketKey, objectKey, uploadKey string) (*APSObject, error)  // 追加
+	GenerateBase64EncodedURN(objectId string) (string, error)
 }

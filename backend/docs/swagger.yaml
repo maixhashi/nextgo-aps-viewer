@@ -309,6 +309,37 @@ paths:
       summary: APSオブジェクトのアップロードシーケンス
       tags:
       - APS Object
+  /api/v1/aps/objects/{objectId}/base64urn:
+    get:
+      consumes:
+      - application/json
+      description: オブジェクトIDをBase64エンコードしたURNを生成します
+      parameters:
+      - description: オブジェクトID
+        in: path
+        name: objectId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: オブジェクトURNのBase64エンコード
+      tags:
+      - APS Object
   /api/v1/aps/objects/signeds3upload:
     put:
       consumes:
