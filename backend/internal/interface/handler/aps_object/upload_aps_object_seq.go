@@ -105,12 +105,16 @@ func (h *APSObjectHandler) UploadAPSObjectSequence(w http.ResponseWriter, r *htt
 		}
 	}
 
-	// レスポンスを返す
-	w.Header().Set("Content-Type", "application/json")
-	response := map[string]string{
-		"message": "Upload to S3 using signed URL completed.",
+	// ステップ4: オブジェクトの作成を完了
+	finalObject, err := h.objectUseCase.CreateObject(bucketKey, objectKey, apsObject.UploadKey)
+	if err != nil {
+		http.Error(w, "failed to complete object creation: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
-	json.NewEncoder(w).Encode(response)
+
+	// レスポンスを更新
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(finalObject)
 }
 
 // 一時ファイルに保存するヘルパー関数

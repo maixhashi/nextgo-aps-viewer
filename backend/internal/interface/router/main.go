@@ -23,7 +23,7 @@ func NewRouter() *mux.Router {
     // Initialize repositories
     apsTokenRepo := aps_token_repo.NewAPSTokenRepository()
     apsBucketRepo := aps_bucket_repo.NewAPSBucketRepository(httpClient)
-    apsObjectRepo := aps_object_repo.NewAPSObjectRepository(apsTokenRepo)
+    apsObjectRepo := aps_object_repo.NewAPSObjectRepository(httpClient, apsTokenRepo)
     
     // Initialize use cases
     apsTokenUseCase := token_usecase.NewAPSTokenUseCase(apsTokenRepo)

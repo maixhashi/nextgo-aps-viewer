@@ -1,18 +1,20 @@
 package aps_object
 
 import (
+	"net/http"
 	"github.com/maixhashi/nextgo-aps-viewer/backend/internal/domain"
-	"github.com/maixhashi/nextgo-aps-viewer/backend/internal/infrastructure/aps/aps_token"
 )
 
 // APSObjectRepository はAPSオブジェクトのリポジトリ実装
 type APSObjectRepository struct {
-	tokenRepo *aps_token.APSTokenRepository
+	client    *http.Client
+	tokenRepo domain.APSTokenRepository
 }
 
 // NewAPSObjectRepository は新しいAPSObjectRepositoryを作成します
-func NewAPSObjectRepository(tokenRepo *aps_token.APSTokenRepository) *APSObjectRepository {
+func NewAPSObjectRepository(client *http.Client, tokenRepo domain.APSTokenRepository) *APSObjectRepository {
 	return &APSObjectRepository{
+		client:    client,
 		tokenRepo: tokenRepo,
 	}
 }
