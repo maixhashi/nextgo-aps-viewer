@@ -18,7 +18,22 @@ export function useAPSToken() {
   return useQuery({
     queryKey: APS_TOKEN_QUERY_KEY,
     queryFn: async () => {
-      return apiClient.get<APSTokenResponse>('/api/aps/token');
+      const url = `http://localhost:8080/api/v1/aps/token`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `API リクエストエラー: ${response.status} ${response.statusText} - ${
+            JSON.stringify(errorData)
+          }`
+        );
+      }
+      
+      return await response.json();
     },
     // トークンの有効期限は通常3600秒（1時間）なので、
     // 50分（3000秒）経過したらリフェッチする
