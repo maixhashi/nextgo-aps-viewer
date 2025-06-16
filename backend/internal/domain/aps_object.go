@@ -22,6 +22,8 @@ type APSObjectRepository interface {
 	GenerateBase64EncodedURN(objectId string) (string, error)
 	// 新規追加
 	TranslateObject(base64URN string, objectKey string) (*TranslateJobResponse, error)
+	// 追加
+	TrackTranslationJobStatus(urn string) (*TranslationStatus, error)
 }
 
 // APSObjectUseCase はAPSオブジェクトのユースケースインターフェース
@@ -32,6 +34,8 @@ type APSObjectUseCase interface {
 	GenerateBase64EncodedURN(objectId string) (string, error)
 	// 新規追加
 	TranslateObject(base64URN string, objectKey string) (*TranslateJobResponse, error)
+	// 追加
+	TrackTranslationJobStatus(urn string) (*TranslationStatus, error)
 }
 
 type TranslateJobResponse struct {

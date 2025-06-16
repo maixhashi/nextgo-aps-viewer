@@ -499,6 +499,50 @@
                 }
             }
         },
+        "/api/v1/aps/objects/{urn}/status": {
+            "get": {
+                "description": "翻訳ジョブの進捗状況を確認します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APS Object"
+                ],
+                "summary": "翻訳ジョブのステータス確認",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64エンコードされたURN",
+                        "name": "urn",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.TranslationStatus"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/aps_object.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/aps_object.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/aps/token": {
             "post": {
                 "description": "2-legged認証でAPSアクセストークンを取得します",
@@ -646,6 +690,93 @@
                 }
             }
         },
+        "domain.Children": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Resource"
+                    }
+                },
+                "guid": {
+                    "type": "string"
+                },
+                "hasThumbnail": {
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Message"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "progress": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Derivative": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Children"
+                    }
+                },
+                "hasThumbnail": {
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Message"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "outputType": {
+                    "type": "string"
+                },
+                "progress": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Message": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.Permission": {
             "type": "object",
             "properties": {
@@ -653,6 +784,32 @@
                     "type": "string"
                 },
                 "authId": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Resource": {
+            "type": "object",
+            "properties": {
+                "guid": {
+                    "type": "string"
+                },
+                "mime": {
+                    "type": "string"
+                },
+                "resolution": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "role": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "urn": {
                     "type": "string"
                 }
             }
@@ -688,6 +845,35 @@
                     }
                 },
                 "result": {
+                    "type": "string"
+                },
+                "urn": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.TranslationStatus": {
+            "type": "object",
+            "properties": {
+                "derivatives": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Derivative"
+                    }
+                },
+                "hasThumbnail": {
+                    "type": "string"
+                },
+                "progress": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 },
                 "urn": {
