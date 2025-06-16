@@ -1,0 +1,583 @@
+definitions:
+  aps_bucket.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  aps_object.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  domain.APSBucket:
+    properties:
+      bucketKey:
+        type: string
+      createdDate:
+        type: integer
+      policyKey:
+        type: string
+    type: object
+  domain.APSBucketDetail:
+    properties:
+      bucketKey:
+        type: string
+      bucketOwner:
+        type: string
+      createdDate:
+        type: integer
+      permissions:
+        items:
+          $ref: '#/definitions/domain.Permission'
+        type: array
+      policyKey:
+        type: string
+    type: object
+  domain.APSObject:
+    properties:
+      bucketKey:
+        type: string
+      contentType:
+        type: string
+      location:
+        type: string
+      objectId:
+        type: string
+      objectKey:
+        type: string
+      size:
+        type: integer
+      uploadExpiration:
+        type: string
+      uploadKey:
+        type: string
+      urlExpiration:
+        type: string
+      urls:
+        items:
+          type: string
+        type: array
+    type: object
+  domain.APSToken:
+    description: APSトークンレスポンス
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      expires_in:
+        example: 3599
+        type: integer
+      refresh_token:
+        example: ""
+        type: string
+      token_type:
+        example: Bearer
+        type: string
+    type: object
+  domain.Children:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/domain.Resource'
+        type: array
+      guid:
+        type: string
+      hasThumbnail:
+        type: string
+      messages:
+        items:
+          $ref: '#/definitions/domain.Message'
+        type: array
+      name:
+        type: string
+      progress:
+        type: string
+      role:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
+  domain.Derivative:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/domain.Children'
+        type: array
+      hasThumbnail:
+        type: string
+      messages:
+        items:
+          $ref: '#/definitions/domain.Message'
+        type: array
+      name:
+        type: string
+      outputType:
+        type: string
+      progress:
+        type: string
+      status:
+        type: string
+    type: object
+  domain.Message:
+    properties:
+      code:
+        type: string
+      message:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+    type: object
+  domain.Permission:
+    properties:
+      access:
+        type: string
+      authId:
+        type: string
+    type: object
+  domain.Resource:
+    properties:
+      guid:
+        type: string
+      mime:
+        type: string
+      resolution:
+        items:
+          type: number
+        type: array
+      role:
+        type: string
+      type:
+        type: string
+      urn:
+        type: string
+    type: object
+  domain.TranslateJobResponse:
+    properties:
+      acceptedJobs:
+        properties:
+          output:
+            properties:
+              formats:
+                items:
+                  properties:
+                    type:
+                      type: string
+                    views:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                type: array
+            type: object
+        type: object
+      result:
+        type: string
+      urn:
+        type: string
+    type: object
+  domain.TranslationStatus:
+    properties:
+      derivatives:
+        items:
+          $ref: '#/definitions/domain.Derivative'
+        type: array
+      hasThumbnail:
+        type: string
+      progress:
+        type: string
+      region:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+      urn:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: APS Token Management API
+  title: APS Viewer API
+  version: "1.0"
+paths:
+  /api/v1/aps/buckets:
+    get:
+      consumes:
+      - application/json
+      description: Get list of all buckets
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.APSBucket'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_bucket.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/aps_bucket.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get buckets list
+      tags:
+      - APS Bucket
+    post:
+      consumes:
+      - application/json
+      description: 新しいAPSバケットを作成します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.APSBucket'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_bucket.ErrorResponse'
+      summary: APSバケット作成
+      tags:
+      - APS Bucket
+  /api/v1/aps/buckets/{bucketKey}:
+    delete:
+      consumes:
+      - application/json
+      description: 指定されたバケットを削除します
+      parameters:
+      - description: バケットキー
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_bucket.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_bucket.ErrorResponse'
+      summary: APSバケット削除
+      tags:
+      - APS Bucket
+  /api/v1/aps/buckets/{bucketKey}/details:
+    get:
+      consumes:
+      - application/json
+      description: 指定されたバケットの詳細情報を取得します
+      parameters:
+      - description: バケットキー
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.APSBucketDetail'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_bucket.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_bucket.ErrorResponse'
+      summary: APSバケット詳細取得
+      tags:
+      - APS Bucket
+  /api/v1/aps/buckets/{bucketKey}/objects/{objectKey}/signeds3upload:
+    post:
+      consumes:
+      - application/json
+      description: S3へアップロードしたオブジェクトの作成を完了します
+      parameters:
+      - description: バケットキー
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      - description: オブジェクトキー
+        in: path
+        name: objectKey
+        required: true
+        type: string
+      - description: アップロードキー
+        in: body
+        name: uploadKey
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.APSObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: APSオブジェクトの作成完了
+      tags:
+      - APS Object
+  /api/v1/aps/buckets/{bucketKey}/objects/signeds3upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: オブジェクトをS3へ保存するためのS3署名付きURLを取得します
+      parameters:
+      - description: バケットキー
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      - description: アップロードするファイル
+        in: formData
+        name: file
+        required: true
+        type: file
+      - default: 1
+        description: パート数
+        in: query
+        name: parts
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.APSObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: S3署名付きURLの取得
+      tags:
+      - APS Object
+  /api/v1/aps/buckets/{bucketKey}/objects/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: S3署名付きURLを取得してオブジェクトをアップロードするシーケンスを実行します
+      parameters:
+      - description: バケットキー
+        in: path
+        name: bucketKey
+        required: true
+        type: string
+      - description: アップロードするファイル
+        in: formData
+        name: file
+        required: true
+        type: file
+      - default: 1
+        description: パート数
+        in: query
+        name: parts
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: APSオブジェクトのアップロードシーケンス
+      tags:
+      - APS Object
+  /api/v1/aps/objects/{objectId}/base64urn:
+    get:
+      consumes:
+      - application/json
+      description: オブジェクトIDをBase64エンコードしたURNを生成します
+      parameters:
+      - description: オブジェクトID
+        in: path
+        name: objectId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: オブジェクトURNのBase64エンコード
+      tags:
+      - APS Object
+  /api/v1/aps/objects/{objectId}/translate:
+    post:
+      consumes:
+      - application/json
+      description: オブジェクトの翻訳ジョブを作成します
+      parameters:
+      - description: オブジェクトID
+        in: path
+        name: objectId
+        required: true
+        type: string
+      - description: オブジェクトキー
+        in: path
+        name: objectKey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.TranslateJobResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: APSオブジェクトの翻訳ジョブ作成
+      tags:
+      - APS Object
+  /api/v1/aps/objects/{urn}/status:
+    get:
+      consumes:
+      - application/json
+      description: 翻訳ジョブの進捗状況を確認します
+      parameters:
+      - description: Base64エンコードされたURN
+        in: path
+        name: urn
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.TranslationStatus'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: 翻訳ジョブのステータス確認
+      tags:
+      - APS Object
+  /api/v1/aps/objects/signeds3upload:
+    put:
+      consumes:
+      - application/octet-stream
+      description: S3署名付きURLを使用してオブジェクトをS3へアップロードします
+      parameters:
+      - description: 署名付きURL
+        in: query
+        name: signedURL
+        required: true
+        type: string
+      - description: アップロードするファイルのバイナリデータ
+        in: body
+        name: file
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: S3署名付きURLを使用したオブジェクトのアップロード
+      tags:
+      - APS Object
+  /api/v1/aps/token:
+    post:
+      consumes:
+      - application/json
+      description: 2-legged認証でAPSアクセストークンを取得します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.APSToken'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: APSトークン取得
+      tags:
+      - APS Token
+swagger: "2.0"
