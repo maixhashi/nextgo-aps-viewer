@@ -81,6 +81,30 @@ definitions:
       authId:
         type: string
     type: object
+  domain.TranslateJobResponse:
+    properties:
+      acceptedJobs:
+        properties:
+          output:
+            properties:
+              formats:
+                items:
+                  properties:
+                    type:
+                      type: string
+                    views:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                type: array
+            type: object
+        type: object
+      result:
+        type: string
+      urn:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -338,6 +362,40 @@ paths:
           schema:
             $ref: '#/definitions/aps_object.ErrorResponse'
       summary: オブジェクトURNのBase64エンコード
+      tags:
+      - APS Object
+  /api/v1/aps/objects/{objectId}/translate:
+    post:
+      consumes:
+      - application/json
+      description: オブジェクトの翻訳ジョブを作成します
+      parameters:
+      - description: オブジェクトID
+        in: path
+        name: objectId
+        required: true
+        type: string
+      - description: オブジェクトキー
+        in: path
+        name: objectKey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.TranslateJobResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: APSオブジェクトの翻訳ジョブ作成
       tags:
       - APS Object
   /api/v1/aps/objects/signeds3upload:
