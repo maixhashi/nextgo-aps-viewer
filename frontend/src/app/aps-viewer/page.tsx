@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Head from "next/head";
 import { APSViewer } from "@/features/aps/components/APSViewer";
+import { FileUploader } from "@/features/aps/components/FileUploader";
 import { useAPSViewerStore } from "@/store/apsViewerStore";
 
 export default function APSViewerPage() {
@@ -36,12 +37,24 @@ export default function APSViewerPage() {
   }, [fetchConfig]);
 
   return (
-    <>
+    <div className="flex flex-col h-screen">
+      {/* ヘッダー */}
+      <header className="bg-gray-800 text-white p-4">
+        <h1 className="text-2xl font-bold">APS Viewer</h1>
+      </header>
       
-      {/* ビューワーコンテナ */}
-      <div className="w-full h-screen">
-        <APSViewer />
+      {/* メインコンテンツ */}
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+        {/* サイドバー - ファイルアップローダー */}
+        <div className="w-full md:w-1/3 p-4 overflow-y-auto bg-gray-100">
+          <FileUploader />
+        </div>
+        
+        {/* ビューワーコンテナ */}
+        <div className="w-full md:w-2/3 h-full">
+          <APSViewer />
+        </div>
       </div>
-    </>
+    </div>
   );
 }
