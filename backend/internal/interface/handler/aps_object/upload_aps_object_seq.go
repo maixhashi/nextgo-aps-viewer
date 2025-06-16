@@ -126,11 +126,20 @@ func (h *APSObjectHandler) UploadAPSObjectSequence(w http.ResponseWriter, r *htt
 		return
 	}
 
+	// ステップ6: 翻訳ジョブのステータスを確認
+	// 初回のステータス確認
+	translationStatus, err := h.objectUseCase.TrackTranslationJobStatus(base64URN)
+	if err != nil {
+		http.Error(w, "failed to track translation status: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// レスポンスに追加
 	response := map[string]interface{}{
-		"object": finalObject,
+		"object":           finalObject,
 		"base64EncodedURN": base64URN,
-		"translateJob": translateResponse,
+		"translateJob":     translateResponse,
+		"translationStatus": translationStatus,  // 翻訳ステータスを追加
 	}
 
 	w.Header().Set("Content-Type", "application/json")

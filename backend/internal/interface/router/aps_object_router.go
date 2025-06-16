@@ -18,4 +18,8 @@ func SetAPSObjectRoutes(router *mux.Router, handler *aps_object.APSObjectHandler
 	
 	// 既存のルーター設定に追加
 	router.HandleFunc("/api/v1/aps/objects/{objectId}/base64urn", handler.GenerateBase64EncodedURN).Methods("GET")
+
+	// 翻訳ステータス確認エンドポイントを追加
+	router.HandleFunc("/api/v1/aps/objects/{urn}/status", 
+		handler.TrackTranslationJobStatus).Methods("GET")
 }

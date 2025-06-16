@@ -74,11 +74,85 @@ definitions:
         example: Bearer
         type: string
     type: object
+  domain.Children:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/domain.Resource'
+        type: array
+      guid:
+        type: string
+      hasThumbnail:
+        type: string
+      messages:
+        items:
+          $ref: '#/definitions/domain.Message'
+        type: array
+      name:
+        type: string
+      progress:
+        type: string
+      role:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
+  domain.Derivative:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/domain.Children'
+        type: array
+      hasThumbnail:
+        type: string
+      messages:
+        items:
+          $ref: '#/definitions/domain.Message'
+        type: array
+      name:
+        type: string
+      outputType:
+        type: string
+      progress:
+        type: string
+      status:
+        type: string
+    type: object
+  domain.Message:
+    properties:
+      code:
+        type: string
+      message:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+    type: object
   domain.Permission:
     properties:
       access:
         type: string
       authId:
+        type: string
+    type: object
+  domain.Resource:
+    properties:
+      guid:
+        type: string
+      mime:
+        type: string
+      resolution:
+        items:
+          type: number
+        type: array
+      role:
+        type: string
+      type:
+        type: string
+      urn:
         type: string
     type: object
   domain.TranslateJobResponse:
@@ -101,6 +175,25 @@ definitions:
             type: object
         type: object
       result:
+        type: string
+      urn:
+        type: string
+    type: object
+  domain.TranslationStatus:
+    properties:
+      derivatives:
+        items:
+          $ref: '#/definitions/domain.Derivative'
+        type: array
+      hasThumbnail:
+        type: string
+      progress:
+        type: string
+      region:
+        type: string
+      status:
+        type: string
+      type:
         type: string
       urn:
         type: string
@@ -396,6 +489,35 @@ paths:
           schema:
             $ref: '#/definitions/aps_object.ErrorResponse'
       summary: APSオブジェクトの翻訳ジョブ作成
+      tags:
+      - APS Object
+  /api/v1/aps/objects/{urn}/status:
+    get:
+      consumes:
+      - application/json
+      description: 翻訳ジョブの進捗状況を確認します
+      parameters:
+      - description: Base64エンコードされたURN
+        in: path
+        name: urn
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.TranslationStatus'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/aps_object.ErrorResponse'
+      summary: 翻訳ジョブのステータス確認
       tags:
       - APS Object
   /api/v1/aps/objects/signeds3upload:
