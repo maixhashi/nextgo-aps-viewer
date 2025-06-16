@@ -1,0 +1,37 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/shared/lib/api/apiClient';
+
+// リクエストの型定義
+interface {{pascalCase name}}Request {
+  // リクエストの型を定義
+}
+
+// レスポンスの型定義
+interface {{pascalCase name}}Response {
+  // レスポンスの型を定義
+}
+
+// 関連するクエリキー（無効化するキャッシュ）
+const RELATED_QUERY_KEYS = [['{{dashCase feature}}']];
+
+/**
+ * {{name}} - データを更新するためのカスタムフック
+ */
+export function {{name}}() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: {{pascalCase name}}Request) => {
+      // APIエンドポイントのパス
+      const endpoint = `/api/{{dashCase feature}}/endpoint`;
+      
+      return apiClient.post<{{pascalCase name}}Response>(endpoint, data);
+    },
+    onSuccess: (data, variables) => {
+      // 成功時に関連するクエリキャッシュを無効化
+      RELATED_QUERY_KEYS.forEach(queryKey => {
+        queryClient.invalidateQueries({ queryKey });
+      });
+    },
+  });
+}

@@ -1,0 +1,29 @@
+import { z } from 'zod';
+
+// {{pascalCase name}}のスキーマ定義
+export const {{camelCase name}}Schema = z.object({
+  id: z.string().uuid({
+    message: 'IDは有効なUUID形式である必要があります',
+  }),
+  name: z.string().min(1, {
+    message: '名前は必須です',
+  }),
+  // 他のフィールドを追加
+});
+
+// 型定義のエクスポート
+export type {{pascalCase name}} = z.infer<typeof {{camelCase name}}Schema>;
+
+// 作成用のスキーマ（IDなどのサーバー生成フィールドを除外）
+export const create{{pascalCase name}}Schema = {{camelCase name}}Schema.omit({
+  id: true,
+});
+
+export type Create{{pascalCase name}} = z.infer<typeof create{{pascalCase name}}Schema>;
+
+// 更新用のスキーマ（すべてのフィールドをオプションに）
+export const update{{pascalCase name}}Schema = {{camelCase name}}Schema
+  .omit({ id: true })
+  .partial();
+
+export type Update{{pascalCase name}} = z.infer<typeof update{{pascalCase name}}Schema>;
