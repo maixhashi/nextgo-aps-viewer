@@ -193,8 +193,129 @@ export function APSViewer() {
           }
         }
 
-        // 全てのメッシュデータを取得（制限を解除して全メッシュを処理）
-        getAllMeshData() {
+        // 要素の詳細情報を取得（修正版）
+        async getElementInfo(dbId: number): Promise<any> {
+          return new Promise((resolve) => {
+            if (!this.viewer || !this.viewer.model) {
+              resolve({
+                name: `Element ${dbId}`,
+                category: 'Unknown',
+                type: 'Unknown',
+                properties: {}
+              });
+              return;
+            }
+
+            const model = this.viewer.model;
+            
+            // プロパティを取得
+            model.getProperties(dbId, (properties: any) => {
+              console.log(`Properties for dbId ${dbId}:`, properties);
+              
+              const elementInfo = {
+                name: properties.name || `Element ${dbId}`,
+                category: 'Unknown',
+                type: 'Unknown',
+                properties: {}
+              };
+
+              if (properties.properties && Array.isArray(properties.properties)) {
+                properties.properties.forEach((prop: any) => {
+                  if (prop.displayName && prop.displayValue !== undefined) {
+                    elementInfo.properties[prop.displayName] = {
+                      value: prop.displayValue,
+                      units: prop.units || '',
+                      type: prop.type || 'string',
+                      category: prop.displayCategory || 'General'
+                    };
+
+                    // カテゴリとタイプの特定
+                    const propName = prop.displayName.toLowerCase();
+                    if (propName.includes('category') || propName.includes('family')) {
+                      elementInfo.category = String(prop.displayValue);
+                    }
+                    if (propName.includes('type') || propName.includes('family name')) {
+                      elementInfo.type = String(prop.displayValue);
+                    }
+                  }
+                });
+              }
+
+              // 外部プロパティも確認
+              if (properties.externalProperties && Array.isArray(properties.externalProperties)) {
+                properties.externalProperties.forEach((extProp: any) => {
+                  if (extProp.properties && Array.isArray(extProp.properties)) {
+                    extProp.properties.forEach((prop: any) => {
+                      if (prop.displayName && prop.displayValue !== undefined) {
+                        elementInfo.properties[prop.displayName] = {
+                          value: prop.displayValue,
+                          units: prop.units || '',
+                          type: prop.type || 'string',
+                          category: prop.displayCategory || extProp.displayCategory || 'General'
+                        };
+                      }
+                    });
+                  }
+                });
+              }
+
+              console.log(`Element info for dbId ${dbId}:`, elementInfo);
+              resolve(elementInfo);
+            }, (error: any) => {
+              console.warn(`Failed to get properties for dbId ${dbId}:`, error);
+              resolve({
+                name: `Element ${dbId}`,
+                category: 'Unknown',
+                type: 'Unknown',
+                properties: {}
+              });
+            });
+          });
+        }
+
+        // バウンディングボックスを計算（修正版）
+        calculateBoundingBox(vertices: Float32Array, matrixWorld: number[]): any {
+          if (!vertices || vertices.length === 0) return null;
+
+          let minX = Infinity, minY = Infinity, minZ = Infinity;
+          let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+
+          // 頂点座標からバウンディングボックスを計算
+          for (let i = 0; i < vertices.length; i += 3) {
+            const x = vertices[i];
+            const y = vertices[i + 1];
+            const z = vertices[i + 2];
+
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            minZ = Math.min(minZ, z);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+            maxZ = Math.max(maxZ, z);
+          }
+
+          const center = [
+            (minX + maxX) / 2,
+            (minY + maxY) / 2,
+            (minZ + maxZ) / 2
+          ];
+
+          const size = [
+            maxX - minX,
+            maxY - minY,
+            maxZ - minZ
+          ];
+
+          return {
+            min: [minX, minY, minZ],
+            max: [maxX, maxY, maxZ],
+            center,
+            size
+          };
+        }
+
+        // 全てのメッシュデータを取得（修正版 - 要素情報付き）
+        async getAllMeshData() {
           if (!this.viewer || !this.viewer.model) {
             console.error('Viewer or model not available');
             return [];
@@ -205,54 +326,53 @@ export function APSViewer() {
           const allMeshes: any[] = [];
 
           try {
-            console.log('Starting mesh extraction...');
-            console.log('Fragment count:', fragList.fragments.fragId2dbId.length);
-            
-            // 全てのフラグメントを処理（制限を解除）
+            console.log('Starting mesh extraction with element info...');
             const totalFragments = fragList.fragments.fragId2dbId.length;
             let processedCount = 0;
             let successCount = 0;
             
-            for (let fragId = 0; fragId < totalFragments; fragId++) {
+            // 最初の10個のフラグメントで詳細テスト
+            const maxFragments = Math.min(totalFragments, 70);
+            
+            for (let fragId = 0; fragId < maxFragments; fragId++) {
               try {
                 const dbId = fragList.fragments.fragId2dbId[fragId];
                 if (dbId === undefined) continue;
 
                 processedCount++;
                 
-                // 進捗表示（100個ごと）
-                if (processedCount % 100 === 0) {
-                  console.log(`Processing fragment ${processedCount}/${totalFragments}...`);
+                if (processedCount % 10 === 0) {
+                  console.log(`Processing fragment ${processedCount}/${maxFragments}...`);
                 }
 
                 const renderProxy = this.viewer.impl.getRenderProxy(model, fragId);
-                if (!renderProxy) {
+                if (!renderProxy || !renderProxy.geometry) {
                   continue;
                 }
 
-                // より詳細なrenderProxyの分析
-                const hasGeometry = !!renderProxy.geometry;
-                const hasMatrix = !!renderProxy.matrixWorld;
-                const hasMaterial = !!renderProxy.material;
-
-                if (!hasGeometry) {
-                  continue;
-                }
-
-                // ジオメトリデータを抽出
                 const geometryData = this.extractGeometryData(renderProxy);
                 if (!geometryData) {
                   continue;
                 }
 
                 // 変換行列を取得
-                let matrixArray = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]; // デフォルト単位行列
+                let matrixArray = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
                 if (renderProxy.matrixWorld) {
                   if (renderProxy.matrixWorld.elements) {
                     matrixArray = [...renderProxy.matrixWorld.elements];
                   } else if (Array.isArray(renderProxy.matrixWorld)) {
                     matrixArray = [...renderProxy.matrixWorld];
                   }
+                }
+
+                // 要素情報を取得（非同期）
+                console.log(`Getting element info for dbId ${dbId}...`);
+                const elementInfo = await this.getElementInfo(dbId);
+                
+                // バウンディングボックスを計算
+                const boundingBox = this.calculateBoundingBox(geometryData.vertices, matrixArray);
+                if (boundingBox) {
+                  elementInfo.boundingBox = boundingBox;
                 }
 
                 // マテリアル情報を取得
@@ -271,19 +391,41 @@ export function APSViewer() {
                   fragId: fragId,
                   geometryData: geometryData,
                   matrixWorld: matrixArray,
-                  material: materialInfo
+                  material: materialInfo,
+                  elementInfo: elementInfo
                 });
 
                 successCount++;
+                console.log(`Successfully processed fragment ${fragId}, dbId ${dbId}`);
 
               } catch (error) {
                 console.warn(`Failed to extract mesh for fragId ${fragId}:`, error);
               }
             }
 
-            console.log(`Successfully extracted ${successCount} meshes out of ${processedCount} processed fragments`);
-            console.log(`Success rate: ${((successCount / processedCount) * 100).toFixed(1)}%`);
+            console.log(`Successfully extracted ${successCount} meshes with element info`);
             
+            // 要素情報の統計を表示
+            const withElementInfo = allMeshes.filter(mesh => mesh.elementInfo && mesh.elementInfo.name !== `Element ${mesh.dbId}`);
+            const withProperties = allMeshes.filter(mesh => 
+              mesh.elementInfo?.properties && Object.keys(mesh.elementInfo.properties).length > 0
+            );
+            
+            console.log('=== Element Info Statistics ===');
+            console.log('Total meshes:', allMeshes.length);
+            console.log('With element info:', withElementInfo.length);
+            console.log('With properties:', withProperties.length);
+            
+            // サンプル要素情報を表示
+            allMeshes.slice(0, 3).forEach((mesh, index) => {
+              console.log(`Sample mesh ${index}:`, {
+                dbId: mesh.dbId,
+                fragId: mesh.fragId,
+                elementInfo: mesh.elementInfo,
+                propertyCount: mesh.elementInfo?.properties ? Object.keys(mesh.elementInfo.properties).length : 0
+              });
+            });
+
             this.extractedMeshes = allMeshes;
             return allMeshes;
           } catch (error) {
@@ -293,9 +435,9 @@ export function APSViewer() {
         }
 
         // 抽出したメッシュデータをグローバルに公開
-        exportMeshData() {
-          console.log('=== Starting mesh data export ===');
-          const meshData = this.getAllMeshData();
+        async exportMeshData() {
+          console.log('=== Starting mesh data export with element info ===');
+          const meshData = await this.getAllMeshData();
           
           console.log('Extracted mesh data count:', meshData.length);
           
@@ -305,48 +447,20 @@ export function APSViewer() {
               totalMeshes: meshData.length,
               withIndices: meshData.filter(m => m.geometryData.indices).length,
               withNormals: meshData.filter(m => m.geometryData.normals).length,
+              withElementInfo: meshData.filter(m => m.elementInfo && m.elementInfo.name !== `Element ${m.dbId}`).length,
+              withProperties: meshData.filter(m => m.elementInfo?.properties && Object.keys(m.elementInfo.properties).length > 0).length,
               totalVertices: meshData.reduce((sum, m) => sum + m.geometryData.vertexCount, 0),
               totalTriangles: meshData.reduce((sum, m) => sum + (m.geometryData.indices ? m.geometryData.indices.length / 3 : m.geometryData.vertexCount / 3), 0)
             };
             
-            console.log('=== Mesh Statistics ===');
+            console.log('=== Enhanced Mesh Statistics ===');
             console.log('Total meshes:', stats.totalMeshes);
             console.log('Meshes with indices:', stats.withIndices);
             console.log('Meshes with normals:', stats.withNormals);
+            console.log('Meshes with element info:', stats.withElementInfo);
+            console.log('Meshes with properties:', stats.withProperties);
             console.log('Total vertices:', stats.totalVertices);
             console.log('Total triangles:', Math.floor(stats.totalTriangles));
-
-            // 最初の5個のメッシュの詳細情報を出力
-            meshData.slice(0, 5).forEach((mesh, index) => {
-              console.log(`\n=== Mesh ${index} Details ===`);
-              console.log('DbId:', mesh.dbId);
-              console.log('FragId:', mesh.fragId);
-              console.log('Vertex count:', mesh.geometryData?.vertexCount || 0);
-              console.log('Vertices length:', mesh.geometryData?.vertices?.length || 0);
-              console.log('Indices length:', mesh.geometryData?.indices?.length || 0);
-              console.log('Has normals:', !!mesh.geometryData?.normals);
-              console.log('Has material:', !!mesh.material);
-              
-              if (mesh.geometryData?.vertices) {
-                console.log('Sample vertices:', Array.from(mesh.geometryData.vertices.slice(0, 9)));
-              }
-              if (mesh.geometryData?.indices) {
-                console.log('Sample indices:', Array.from(mesh.geometryData.indices.slice(0, 9)));
-              }
-            });
-
-            // 大きなメッシュ（頂点数が多い）を特定
-            const largeMeshes = meshData
-              .filter(m => m.geometryData.vertexCount > 100)
-              .sort((a, b) => b.geometryData.vertexCount - a.geometryData.vertexCount)
-              .slice(0, 10);
-            
-            if (largeMeshes.length > 0) {
-              console.log('\n=== Top 10 Largest Meshes ===');
-              largeMeshes.forEach((mesh, index) => {
-                console.log(`${index + 1}. FragId ${mesh.fragId}: ${mesh.geometryData.vertexCount} vertices`);
-              });
-            }
 
             window.extractedGeometries = meshData;
             
