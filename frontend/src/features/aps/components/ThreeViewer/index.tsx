@@ -3,7 +3,6 @@
 import { Canvas } from '@react-three/fiber';
 import { useMeshDataManager } from './hooks/useMeshDataManager';
 import { ExtractedMeshes } from './ExtractedMeshes';
-import { ElementInfoPanel } from './ElementInfoPanel';
 import { UIOverlay } from './UIOverlay';
 import { LoadingAndErrorStates } from './LoadingAndErrorStates';
 import { DebugPanel } from './DebugPanel';
@@ -11,6 +10,7 @@ import { SceneLighting } from './SceneLighting';
 import { SceneGrid } from './SceneGrid';
 import { SceneControls } from './SceneControls';
 import { CameraController } from './CameraController';
+import { SelectedElementInfo } from './SelectedElementInfo';
 
 export function ThreeViewer() {
   const {
@@ -28,9 +28,18 @@ export function ThreeViewer() {
     handleBackgroundClick
   } = useMeshDataManager();
 
+  // デバッグ用：selectedElementの状態を監視
+  console.log('ThreeViewer render - selectedElement:', selectedElement);
+  console.log('ThreeViewer render - selectedElement exists:', !!selectedElement);
+
   return (
     <div className="relative w-full h-full bg-gray-900">
-      {/* Three.js Canvas */}
+      {/* デバッグ用の固定表示 */}
+      <div className="absolute top-0 right-0 bg-blue-500 text-white p-2 z-50 text-xs">
+        Selected: {selectedElement ? `${selectedElement.dbId}` : 'None'}
+      </div>
+
+      {/* Three.js Canvas - 一時的にonClickを無効化 */}
       <Canvas
         camera={{ 
           position: [50, 50, 50], 
@@ -43,7 +52,7 @@ export function ThreeViewer() {
           alpha: true,
           preserveDrawingBuffer: true
         }}
-        onClick={handleBackgroundClick}
+        // onClick={handleBackgroundClick} // 一時的にコメントアウト
       >
         {/* シーンの基本要素 */}
         <SceneLighting />
@@ -66,12 +75,11 @@ export function ThreeViewer() {
         <CameraController meshData={meshData} />
       </Canvas>
 
-      {/* 要素情報パネル */}
+      {/* ドラッグ可能な要素情報パネル */}
       {selectedElement && (
-        <ElementInfoPanel
-          selectedElement={selectedElement}
+        <SelectedElementInfo 
+          selectedElement={selectedElement} 
           onClose={handleDeselectElement}
-          onPropertyChange={handlePropertyChange}
         />
       )}
 

@@ -9,13 +9,18 @@ export function useMeshDataManager() {
   const [error, setError] = useState<string | null>(null);
 
   // 要素選択ハンドラー
-  const handleElementSelect = useCallback((element: ExtractedMeshData) => {
+  const handleElementSelect = useCallback((element: ExtractedMeshData, event?: any) => {
     console.log('Element selected:', {
       dbId: element.dbId,
       fragId: element.fragId,
       name: element.elementInfo?.name,
       category: element.elementInfo?.category
     });
+    
+    // イベントの伝播を停止
+    if (event) {
+      event.stopPropagation();
+    }
     
     // プロパティの詳細構造をデバッグ出力
     if (element.elementInfo?.properties) {
@@ -103,6 +108,7 @@ export function useMeshDataManager() {
 
   // 選択解除ハンドラー
   const handleDeselectElement = useCallback(() => {
+    console.log('Deselecting element');
     setSelectedElement(null);
   }, []);
 
@@ -115,9 +121,14 @@ export function useMeshDataManager() {
     window.extractedGeometries = [];
   };
 
-  // 背景クリックで選択解除
-  const handleBackgroundClick = useCallback(() => {
-    setSelectedElement(null);
+  // 背景クリックで選択解除（より慎重に）
+  const handleBackgroundClick = useCallback((event: any) => {
+    console.log('Background click detected', event);
+    // イベントターゲットがCanvasの場合のみ選択解除
+    if (event.target && event.target.tagName === 'CANVAS') {
+      console.log('Deselecting due to canvas background click');
+      setSelectedElement(null);
+    }
   }, []);
 
   useEffect(() => {
