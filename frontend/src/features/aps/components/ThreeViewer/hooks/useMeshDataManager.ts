@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useSnapshot } from 'valtio';
 import { ExtractedMeshData } from '../types';
+import { transformState, setSelectedElement as setTransformSelectedElement } from '../store/transformStore';
 
 export function useMeshDataManager() {
   const [meshData, setMeshData] = useState<ExtractedMeshData[]>([]);
@@ -7,6 +9,19 @@ export function useMeshDataManager() {
   const [hoveredElement, setHoveredElement] = useState<ExtractedMeshData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const snap = useSnapshot(transformState);
+
+  // Transform stateとの同期
+  useEffect(() => {
+    if (snap.selectedElement !== selectedElement) {
+      if (snap.selectedElement) {
+        setSelectedElement(snap.selectedElement);
+      } else if (!snap.selectedElement && selectedElement) {
+        setSelectedElement(null);
+      }
+    }
+  }, [snap.selectedElement]);
 
   // 要素選択ハンドラー
   const handleElementSelect = useCallback((element: ExtractedMeshData, event?: any) => {
@@ -22,6 +37,10 @@ export function useMeshDataManager() {
       event.stopPropagation();
     }
     
+    // 両方の状態を更新
+    setSelectedElement(element);
+    setTransformSelectedElement(element);
+    
     // プロパティの詳細構造をデバッグ出力
     if (element.elementInfo?.properties) {
       console.log('Element properties structure:');
@@ -31,13 +50,9 @@ export function useMeshDataManager() {
           type: typeof value,
           hasValueProperty: typeof value === 'object' && value !== null && 'value' in value,
           hasTypeProperty: typeof value === 'object' && value !== null && 'type' in value,
-          typeValue: typeof value === 'object' && value !== null && value.type ? value.type : 'no type',
-          typeOfType: typeof value === 'object' && value !== null && value.type ? typeof value.type : 'no type property'
         });
       });
     }
-    
-    setSelectedElement(element);
   }, []);
 
   // 要素ホバーハンドラー
@@ -85,6 +100,7 @@ export function useMeshDataManager() {
 
     setMeshData(updatedMeshData);
     setSelectedElement(updatedElement);
+    setTransformSelectedElement(updatedElement);
 
     // グローバルデータも更新
     if (window.extractedGeometries) {
@@ -110,25 +126,41 @@ export function useMeshDataManager() {
   const handleDeselectElement = useCallback(() => {
     console.log('Deselecting element');
     setSelectedElement(null);
+    setTransformSelectedElement(null);
   }, []);
 
   // メッシュデータをクリアする関数
-  const clearMeshData = () => {
+  const clearMeshData = useCallback(() => {
     setMeshData([]);
     setSelectedElement(null);
+    setTransformSelectedElement(null);
     setHoveredElement(null);
     setError(null);
     window.extractedGeometries = [];
-  };
+  }, []);
 
-  // 背景クリックで選択解除（より慎重に）
+  // 背景クリックで選択解除
   const handleBackgroundClick = useCallback((event: any) => {
     console.log('Background click detected', event);
-    // イベントターゲットがCanvasの場合のみ選択解除
     if (event.target && event.target.tagName === 'CANVAS') {
       console.log('Deselecting due to canvas background click');
       setSelectedElement(null);
+      setTransformSelectedElement(null);
     }
+  }, []);
+
+  // Transform変更イベントのリスナー
+  useEffect(() => {
+    const handleTransformChanged = (event: CustomEvent) => {
+      console.log('Element transform changed:', event.detail);
+      // 必要に応じて追加の処理を行う
+    };
+
+    window.addEventListener('elementTransformChanged', handleTransformChanged as EventListener);
+
+    return () => {
+      window.removeEventListener('elementTransformChanged', handleTransformChanged as EventListener);
+    };
   }, []);
 
   useEffect(() => {
@@ -163,19 +195,6 @@ export function useMeshDataManager() {
           total: extractedData.length,
           withElementInfo: withElementInfo.length,
           withProperties: withProperties.length
-        });
-
-        // サンプル要素情報を表示
-        extractedData.slice(0, 3).forEach((mesh, index) => {
-          console.log(`Sample element ${index}:`, {
-            dbId: mesh.dbId,
-            fragId: mesh.fragId,
-            name: mesh.elementInfo?.name,
-            category: mesh.elementInfo?.category,
-            type: mesh.elementInfo?.type,
-            propertyCount: mesh.elementInfo?.properties ? Object.keys(mesh.elementInfo.properties).length : 0,
-            hasBoundingBox: !!mesh.elementInfo?.boundingBox
-          });
         });
 
         setMeshData(extractedData);

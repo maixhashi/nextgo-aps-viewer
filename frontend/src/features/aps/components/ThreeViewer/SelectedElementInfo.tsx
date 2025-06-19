@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useSnapshot } from 'valtio';
 import { ExtractedMeshData } from './types';
+import { transformState, getCurrentTransformMode, cycleTransformMode } from './store/transformStore';
 
 interface SelectedElementInfoProps {
   selectedElement: ExtractedMeshData;
@@ -15,11 +17,11 @@ export function SelectedElementInfo({ selectedElement, onClose }: SelectedElemen
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [previousPosition, setPreviousPosition] = useState({ x: 16, y: 16 });
-  const [previousSize, setPreviousSize] = useState({ width: 300, height: 'auto' });
   const panelRef = useRef<HTMLDivElement>(null);
+  
+  const snap = useSnapshot(transformState);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    // ヘッダー部分でのみドラッグを開始（ボタン以外）
     const target = e.target as HTMLElement;
     const dragHandle = target.closest('.drag-handle');
     const isButton = target.closest('.window-button');
@@ -64,7 +66,6 @@ export function SelectedElementInfo({ selectedElement, onClose }: SelectedElemen
     e.preventDefault();
   }, []);
 
-  // ウィンドウ操作ハンドラー
   const handleClose = useCallback(() => {
     onClose?.();
   }, [onClose]);
@@ -75,25 +76,21 @@ export function SelectedElementInfo({ selectedElement, onClose }: SelectedElemen
 
   const handleMaximize = useCallback(() => {
     if (isMaximized) {
-      // 元のサイズ・位置に戻す
       setPosition(previousPosition);
       setIsMaximized(false);
     } else {
-      // 現在の位置・サイズを保存してから最大化
       setPreviousPosition(position);
       setPosition({ x: 10, y: 10 });
       setIsMaximized(true);
     }
   }, [isMaximized, position, previousPosition]);
 
-  // ダブルクリックで最大化/復元
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('.window-button')) return;
     handleMaximize();
   }, [handleMaximize]);
 
-  // マウスイベントリスナーの設定
   useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove, { passive: false });
@@ -114,9 +111,8 @@ export function SelectedElementInfo({ selectedElement, onClose }: SelectedElemen
     return null;
   }
 
-  const { dbId, fragId, elementInfo } = selectedElement;
+  const { dbId, fragId, elementInfo, transform } = selectedElement;
 
-  // 最大化時のスタイル
   const maxStyle = isMaximized ? {
     left: '10px',
     top: '10px',
@@ -154,7 +150,6 @@ export function SelectedElementInfo({ selectedElement, onClose }: SelectedElemen
           backgroundColor: isDragging ? '#e5e7eb' : '#f3f4f6'
         }}
       >
-        {/* macOSスタイルのウィンドウボタン */}
         <div className="flex space-x-2">
           <button
             className="window-button w-3 h-3 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center group transition-colors"
@@ -169,7 +164,7 @@ export function SelectedElementInfo({ selectedElement, onClose }: SelectedElemen
             title="Minimize"
           >
             <span className="text-yellow-800 text-xs opacity-0 group-hover:opacity-100 font-bold leading-none">−</span>
-          </button>
+            </button>
           <button
             className="window-button w-3 h-3 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center group transition-colors"
             onClick={handleMaximize}
@@ -179,12 +174,10 @@ export function SelectedElementInfo({ selectedElement, onClose }: SelectedElemen
           </button>
         </div>
 
-        {/* タイトル */}
         <h3 className="text-sm font-semibold text-gray-800 pointer-events-none flex-1 text-center">
           Selected Element
         </h3>
 
-        {/* 右側のスペース（バランス用） */}
         <div className="w-16"></div>
       </div>
 
@@ -210,6 +203,62 @@ export function SelectedElementInfo({ selectedElement, onClose }: SelectedElemen
                 </div>
               </div>
             </div>
+
+            {/* Transform Controls */}
+            <div className="border-b pb-2">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium text-gray-700">Transform Controls</h4>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 capitalize">
+                    Mode: {getCurrentTransformMode()}
+                  </span>
+                  <button
+                    onClick={cycleTransformMode}
+                    className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
+                  >
+                    Switch
+                  </button>
+                </div>
+              </div>
+              
+              <div className="text-xs text-gray-600 space-y-1">
+                <div>• Click and drag the gizmo to transform</div>
+                <div>• Right-click element to cycle modes</div>
+                <div>• Current: <span className="font-medium capitalize">{getCurrentTransformMode()}</span></div>
+                {snap.isTransforming && (
+                  <div className="text-blue-600 font-medium">🔄 Transforming...</div>
+                )}
+              </div>
+            </div>
+
+            {/* Transform Information */}
+            {transform && (
+              <div className="border-b pb-2">
+                <h4 className="font-medium text-gray-700 mb-2">Current Transform</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="font-medium text-gray-600">Position:</div>
+                    <div className="text-gray-800">X: {transform.position.x.toFixed(2)}</div>
+                    <div className="text-gray-800">Y: {transform.position.y.toFixed(2)}</div>
+                    <div className="text-gray-800">Z: {transform.position.z.toFixed(2)}</div>
+                  </div>
+                  
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="font-medium text-gray-600">Rotation:</div>
+                    <div className="text-gray-800">X: {(transform.rotation.x * 180 / Math.PI).toFixed(1)}°</div>
+                    <div className="text-gray-800">Y: {(transform.rotation.y * 180 / Math.PI).toFixed(1)}°</div>
+                    <div className="text-gray-800">Z: {(transform.rotation.z * 180 / Math.PI).toFixed(1)}°</div>
+                  </div>
+                  
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="font-medium text-gray-600">Scale:</div>
+                    <div className="text-gray-800">X: {transform.scale.x.toFixed(2)}</div>
+                    <div className="text-gray-800">Y: {transform.scale.y.toFixed(2)}</div>
+                    <div className="text-gray-800">Z: {transform.scale.z.toFixed(2)}</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 要素情報 */}
             {elementInfo && (
@@ -264,6 +313,8 @@ export function SelectedElementInfo({ selectedElement, onClose }: SelectedElemen
               <div>Has Element Info: {elementInfo ? 'Yes' : 'No'}</div>
               <div>Property Count: {elementInfo?.properties ? Object.keys(elementInfo.properties).length : 0}</div>
               <div>Has Bounding Box: {elementInfo?.boundingBox ? 'Yes' : 'No'}</div>
+              <div>Has Transform: {transform ? 'Yes' : 'No'}</div>
+              <div>Transform Mode: {getCurrentTransformMode()}</div>
             </div>
           </div>
         </div>
