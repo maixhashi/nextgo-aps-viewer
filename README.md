@@ -4,9 +4,12 @@ Autodesk Platform Services (APS) のAPIにより任意形式のファイルの�
 Next.jsフロントエンドとGoバックエンドで構築されています。
 
 ## 概要
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f8006005-e542-47c3-9edd-fa0801931819" alt="nextgo-aps-viewer-readme" width="800" />
+</p>
+
 [http://localhost:3000/aps-viewer](http://localhost:3000/aps-viewer)
-
-
 
  - Autodeskの提供する任意形式ファイル(.rvt, .rfa, .dwgなど)をアップロードし、そのファイルのモデルを[APS Viewer](https://aps.autodesk.com/en/docs/viewer/v7/developers_guide/overview/)により描画します。
  - [Extract Mesh]ボタンによりモデルのメッシュデータを抽出し、React Three Fiberにより描画します。
