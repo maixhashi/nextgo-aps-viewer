@@ -22,6 +22,12 @@ export interface ExtractedMeshData {
       size: number[];
     };
   };
+  // Transform情報を追加
+  transform?: {
+    position: { x: number; y: number; z: number };
+    rotation: { x: number; y: number; z: number };
+    scale: { x: number; y: number; z: number };
+  };
 }
 
 // コンポーネントのProps型定義
@@ -51,4 +57,20 @@ export interface ExtractedMeshesProps {
 
 export interface CameraControllerProps {
   meshData: ExtractedMeshData[];
+}
+
+// Transform関連の型定義を追加
+export interface TransformInfo {
+  position: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number };
+  scale: { x: number; y: number; z: number };
+}
+
+export interface TransformChangeEvent {
+  dbId: number;
+  fragId: number;
+  position: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number };
+  scale: { x: number; y: number; z: number };
+  element: ExtractedMeshData;
 }

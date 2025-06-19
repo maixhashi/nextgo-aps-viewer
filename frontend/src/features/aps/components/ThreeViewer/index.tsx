@@ -1,6 +1,7 @@
 'use client';
 
 import { Canvas } from '@react-three/fiber';
+import { useSnapshot } from 'valtio';
 import { useMeshDataManager } from './hooks/useMeshDataManager';
 import { ExtractedMeshes } from './ExtractedMeshes';
 import { UIOverlay } from './UIOverlay';
@@ -8,9 +9,9 @@ import { LoadingAndErrorStates } from './LoadingAndErrorStates';
 import { DebugPanel } from './DebugPanel';
 import { SceneLighting } from './SceneLighting';
 import { SceneGrid } from './SceneGrid';
-import { SceneControls } from './SceneControls';
-import { CameraController } from './CameraController';
 import { SelectedElementInfo } from './SelectedElementInfo';
+import { TransformControls } from './TransformControls';
+import { transformState, setSelectedElement } from './store/transformStore';
 
 export function ThreeViewer() {
   const {
@@ -24,22 +25,39 @@ export function ThreeViewer() {
     handleElementUnhover,
     handlePropertyChange,
     handleDeselectElement,
-    clearMeshData,
-    handleBackgroundClick
+    clearMeshData
   } = useMeshDataManager();
 
-  // デバッグ用：selectedElementの状態を監視
-  console.log('ThreeViewer render - selectedElement:', selectedElement);
-  console.log('ThreeViewer render - selectedElement exists:', !!selectedElement);
+  const snap = useSnapshot(transformState);
+
+  // Handle pointer missed - 参考例のパターン
+  const handlePointerMissed = (event: any) => {
+    if (event.type === 'click' && !snap.isTransforming) {
+      console.log('Canvas pointer missed - deselecting');
+      handleDeselectElement();
+      setSelectedElement(null);
+    }
+  };
+
+  console.log('ThreeViewer render:', {
+    meshDataCount: meshData.length,
+    selectedElement: selectedElement?.dbId,
+    transformSelected: snap.selectedElement?.dbId,
+    isTransforming: snap.isTransforming
+  });
 
   return (
     <div className="relative w-full h-full bg-gray-900">
       {/* デバッグ用の固定表示 */}
       <div className="absolute top-0 right-0 bg-blue-500 text-white p-2 z-50 text-xs">
-        Selected: {selectedElement ? `${selectedElement.dbId}` : 'None'}
+        <div>Meshes: {meshData.length}</div>
+        <div>Selected: {selectedElement ? `${selectedElement.dbId}` : 'None'}</div>
+        <div>Transform Selected: {snap.selectedElement ? `${snap.selectedElement.dbId}` : 'None'}</div>
+        <div>Mode: {snap.mode} (0=move, 1=rotate, 2=scale)</div>
+        <div>Transforming: {snap.isTransforming ? 'Yes' : 'No'}</div>
       </div>
 
-      {/* Three.js Canvas - 一時的にonClickを無効化 */}
+      {/* Three.js Canvas */}
       <Canvas
         camera={{ 
           position: [50, 50, 50], 
@@ -52,12 +70,11 @@ export function ThreeViewer() {
           alpha: true,
           preserveDrawingBuffer: true
         }}
-        // onClick={handleBackgroundClick} // 一時的にコメントアウト
+        onPointerMissed={handlePointerMissed}
       >
         {/* シーンの基本要素 */}
         <SceneLighting />
         <SceneGrid />
-        <SceneControls />
 
         {/* 抽出されたメッシュ（選択機能付き） */}
         {meshData.length > 0 && (
@@ -71,8 +88,8 @@ export function ThreeViewer() {
           />
         )}
 
-        {/* カメラコントローラー */}
-        <CameraController meshData={meshData} />
+        {/* Transform Controls - 最後に配置して他のコンポーネントより優先 */}
+        <TransformControls />
       </Canvas>
 
       {/* ドラッグ可能な要素情報パネル */}

@@ -1,8 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
+import { useSnapshot } from 'valtio';
+import { useCursor } from '@react-three/drei';
 import { SelectableMeshProps } from './types';
+import { transformState, setSelectedElement, setHoveredElement, cycleTransformMode } from './store/transformStore';
+
+// グローバルなメッシュキャッシュ
+const meshCache = new Map<string, THREE.Mesh>();
 
 export function SelectableMesh({ 
   meshData, 
@@ -13,27 +19,27 @@ export function SelectableMesh({
   onUnhover 
 }: SelectableMeshProps) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const wireframeRef = useRef<THREE.Mesh>(null);
-  const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
+  const [localHovered, setLocalHovered] = useState(false);
+  
+  const snap = useSnapshot(transformState);
+  
+  // Use cursor hook for better UX
+  useCursor(localHovered);
 
-  useEffect(() => {
+  // メッシュのユニークキー
+  const meshKey = `${meshData.dbId}-${meshData.fragId}`;
+  const meshName = `mesh-${meshKey}`;
+
+  // ジオメトリとマテリアルをメモ化
+  const { geometry, material } = useMemo(() => {
     const { geometryData, matrixWorld } = meshData;
     
     if (!geometryData || !geometryData.vertices || geometryData.vertices.length === 0) {
       console.warn(`No valid geometry data for mesh dbId: ${meshData.dbId}, fragId: ${meshData.fragId}`);
-      return;
+      return { geometry: null, material: null };
     }
 
-    console.log(`Creating geometry for dbId: ${meshData.dbId}, fragId: ${meshData.fragId}`);
-    console.log('Vertex count:', geometryData.vertexCount);
-    console.log('Vertices length:', geometryData.vertices.length);
-    console.log('Has indices:', !!geometryData.indices);
-    console.log('Indices length:', geometryData.indices?.length || 0);
-
-    // 既存のジオメトリを破棄
-    if (geometry) {
-      geometry.dispose();
-    }
+    console.log('Creating geometry and material for', meshKey);
 
     // 新しいジオメトリを作成
     const newGeometry = new THREE.BufferGeometry();
@@ -47,7 +53,6 @@ export function SelectableMesh({
     }
     
     newGeometry.setAttribute('position', new THREE.BufferAttribute(transformedVertices, 3));
-    console.log('Set position attribute with', transformedVertices.length / 3, 'vertices');
 
     // 法線の処理
     if (geometryData.normals && geometryData.normals.length > 0) {
@@ -58,16 +63,13 @@ export function SelectableMesh({
         transformedNormals[i + 2] = -geometryData.normals[i + 1];
       }
       newGeometry.setAttribute('normal', new THREE.BufferAttribute(transformedNormals, 3));
-      console.log('Set transformed normal attribute');
     } else {
       newGeometry.computeVertexNormals();
-      console.log('Computed vertex normals');
     }
 
     // インデックスの処理
     if (geometryData.indices && geometryData.indices.length > 0) {
       newGeometry.setIndex(new THREE.BufferAttribute(geometryData.indices, 1));
-      console.log('Set index attribute with', geometryData.indices.length / 3, 'triangles');
     }
 
     // バウンディングボックスとバウンディングスフィアを計算
@@ -79,91 +81,130 @@ export function SelectableMesh({
       const matrix = new THREE.Matrix4();
       matrix.fromArray(matrixWorld);
       newGeometry.applyMatrix4(matrix);
-      console.log('Applied transformation matrix');
     }
 
-    // ジオメトリの最終チェック
-    const bbox = newGeometry.boundingBox;
-    if (bbox) {
-      const size = bbox.getSize(new THREE.Vector3());
-      console.log(`Geometry bounding box size: ${size.x.toFixed(2)}, ${size.y.toFixed(2)}, ${size.z.toFixed(2)}`);
+    // 色の計算
+    const getColor = () => {
+      if (isSelected) return '#ff6080';
+      if (isHovered || localHovered) return '#4ecdc4';
+      return 'white';
+    };
+
+    // マテリアルを作成
+    const newMaterial = new THREE.MeshPhongMaterial({
+      color: getColor(),
+      transparent: isHovered || isSelected || localHovered,
+      opacity: isSelected ? 0.9 : isHovered || localHovered ? 0.8 : 1.0,
+      side: THREE.DoubleSide,
+    });
+
+    return { geometry: newGeometry, material: newMaterial };
+  }, [meshData.dbId, meshData.fragId]); // 依存関係を最小限に
+
+  // マテリアルの色を更新
+  useEffect(() => {
+    if (material) {
+      const getColor = () => {
+        if (isSelected) return '#ff6080';
+        if (isHovered || localHovered) return '#4ecdc4';
+        return 'white';
+      };
+
+      material.color.set(getColor());
+      material.transparent = isHovered || isSelected || localHovered;
+      material.opacity = isSelected ? 0.9 : isHovered || localHovered ? 0.8 : 1.0;
+      material.needsUpdate = true;
+    }
+  }, [isSelected, isHovered, localHovered, material]);
+
+  // メッシュをキャッシュに保存し、名前を設定
+  useEffect(() => {
+    if (meshRef.current && geometry && material) {
+      const mesh = meshRef.current;
+      mesh.name = meshName;
       
-      // 非常に小さいジオメトリの警告
-      if (size.length() < 0.001) {
-        console.warn(`Very small geometry detected for mesh ${meshData.fragId}, size:`, size.length());
+      // キャッシュに保存
+      meshCache.set(meshKey, mesh);
+      
+      console.log('Mesh cached and named:', meshName, mesh);
+      
+      // シーングラフの確認
+      if (mesh.parent) {
+        console.log('Mesh is in scene graph:', meshName);
       }
     }
+  }, [meshKey, meshName, geometry, material]);
 
-    setGeometry(newGeometry);
-
-    // クリーンアップ
+  // クリーンアップ - 選択されている場合は保持
+  useEffect(() => {
     return () => {
-      if (newGeometry) {
-        newGeometry.dispose();
+      // 選択されている場合はキャッシュを保持
+      if (snap.selectedElement?.dbId === meshData.dbId && snap.selectedElement?.fragId === meshData.fragId) {
+        console.log('Keeping cached mesh for selected element:', meshKey);
+        return;
+      }
+      
+      // 選択されていない場合のみクリーンアップ
+      const cachedMesh = meshCache.get(meshKey);
+      if (cachedMesh && geometry && material) {
+        console.log('Cleaning up mesh:', meshKey);
+        meshCache.delete(meshKey);
+        geometry.dispose();
+        material.dispose();
       }
     };
-  }, [meshData]);
+  }, [meshKey, snap.selectedElement, geometry, material]);
 
-  // 色の計算
-  const getColor = () => {
-    if (isSelected) return '#ff6b6b'; // 選択時は赤
-    if (isHovered) return '#4ecdc4'; // ホバー時は青緑
-    const hue = (meshData.fragId * 0.1) % 1;
-    return new THREE.Color().setHSL(hue, 0.7, 0.5);
+  // イベントハンドラー
+  const handleClick = (e: any) => {
+    e.stopPropagation();
+    console.log('Mesh clicked:', meshData.dbId, meshData.fragId);
+    onSelect(meshData);
+    setSelectedElement(meshData);
   };
 
-  const getWireframeColor = () => {
-    if (isSelected) return '#ff9999';
-    if (isHovered) return '#7fdddd';
-    const hue = (meshData.fragId * 0.1) % 1;
-    return new THREE.Color().setHSL(hue, 1.0, 0.8);
+  const handleContextMenu = (e: any) => {
+    if (isSelected) {
+      e.stopPropagation();
+      e.preventDefault();
+      cycleTransformMode();
+    }
   };
 
-  if (!geometry) {
-    return null; // ジオメトリが準備できるまで何も描画しない
+  const handlePointerOver = (e: any) => {
+    e.stopPropagation();
+    setLocalHovered(true);
+    onHover(meshData);
+    setHoveredElement(meshData);
+  };
+
+  const handlePointerOut = (e: any) => {
+    e.stopPropagation();
+    setLocalHovered(false);
+    onUnhover();
+    setHoveredElement(null);
+  };
+
+  if (!geometry || !material) {
+    return null;
   }
 
   return (
-    <group>
-      {/* ソリッドメッシュ */}
-      <mesh
-        ref={meshRef}
-        geometry={geometry}
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelect(meshData);
-        }}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          onHover(meshData);
-        }}
-        onPointerOut={(e) => {
-          e.stopPropagation();
-          onUnhover();
-        }}
-      >
-        <meshPhongMaterial
-          color={getColor()}
-          transparent={isHovered || isSelected}
-          opacity={isSelected ? 0.8 : isHovered ? 0.9 : 1.0}
-          side={THREE.DoubleSide}
-          depthTest={true}
-          depthWrite={true}
-        />
-      </mesh>
-
-      {/* ワイヤーフレーム */}
-      <mesh ref={wireframeRef} geometry={geometry}>
-        <meshBasicMaterial
-          color={getWireframeColor()}
-          wireframe={true}
-          transparent={true}
-          opacity={isSelected ? 1.0 : isHovered ? 0.8 : 0.3}
-          side={THREE.DoubleSide}
-          depthTest={true}
-          depthWrite={false}
-        />
-      </mesh>
-    </group>
+    <mesh
+      ref={meshRef}
+      geometry={geometry}
+      material={material}
+      onClick={handleClick}
+      onContextMenu={handleContextMenu}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
+      dispose={null} // 自動破棄を無効化
+    />
   );
 }
+
+// キャッシュからメッシュを取得するヘルパー関数
+export const getCachedMesh = (dbId: number, fragId: number): THREE.Mesh | null => {
+  const meshKey = `${dbId}-${fragId}`;
+  return meshCache.get(meshKey) || null;
+};
